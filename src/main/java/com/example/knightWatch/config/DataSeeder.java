@@ -5,6 +5,8 @@ import com.example.knightWatch.repository.PlayerProfileRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+
 @Component
 public class DataSeeder implements CommandLineRunner {
 
@@ -17,8 +19,8 @@ public class DataSeeder implements CommandLineRunner {
     @Override
     public void run(String... args) {
         if (repository.count() == 0) {
-            repository.save(new PlayerProfile("MagnusCarlsen", 1000, 72.5));
-            repository.save(new PlayerProfile("HikaruNakamura", 850, 69.8));
+            repository.save(new PlayerProfile("MagnusCarlsen", 1000, 72.5, LocalDateTime.now()));
+            repository.save(new PlayerProfile("HikaruNakamura", 850, 69.8, LocalDateTime.now()));
         }
     }
 }

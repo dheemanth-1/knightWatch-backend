@@ -2,11 +2,16 @@ package com.example.knightWatch.repository;
 
 import com.example.knightWatch.model.LichessGame;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface LichessGameRepository extends JpaRepository<LichessGame, Long> {
     List<LichessGame> findByUsername(String username);
     void deleteAllByUsername(String username);
     List<LichessGame> findTop10ByUsernameOrderByPlayedAtDesc(String username);
+    @Query("SELECT MAX(g.playedAt) FROM LichessGame g WHERE g.username = :username")
+    String findLatestGameDateByUsername(@Param("username") String username);
 }

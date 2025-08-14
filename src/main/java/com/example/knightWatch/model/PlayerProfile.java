@@ -2,6 +2,8 @@ package com.example.knightWatch.model;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
+
 
 @Entity
 @Table(name = "player_profile")
@@ -17,12 +19,16 @@ public class PlayerProfile {
     private int totalGames;
 
     private double winRate;
+
+    private LocalDateTime lastSyncTime;
+
     public PlayerProfile() {}
 
-    public PlayerProfile(String username, int totalGames, double winRate) {
+    public PlayerProfile(String username, int totalGames, double winRate, LocalDateTime lastSyncTime) {
         this.username = username;
         this.totalGames = totalGames;
         this.winRate = winRate;
+        this.lastSyncTime = lastSyncTime;
     }
 
     public Long getId() {
@@ -51,5 +57,13 @@ public class PlayerProfile {
 
     public void setWinRate(double winRate) {
         this.winRate = winRate;
+    }
+
+    public LocalDateTime getLastSyncTime() {
+        return lastSyncTime;
+    }
+
+    public void setLastSyncTime(LocalDateTime lastSyncTime) {
+        this.lastSyncTime = lastSyncTime;
     }
 }

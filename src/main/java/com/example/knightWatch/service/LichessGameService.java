@@ -23,16 +23,16 @@ public class LichessGameService {
 
     private final GamesApi gamesApi;
 
-    public List<LichessGame> fetchUserGamesWithOpenings(String username) {
+    public List<LichessGame> fetchUserGamesWithOpenings(String username, int maxGames) {
         // Get PGN data with opening information
         List<String> pgnGames = gamesApi.pgnByUserId(username, params -> {
             params.opening(true);
             params.tags(true);
-            params.max(10);
+            params.max(maxGames);
         }).stream().map(Object::toString).toList();
 
         // Get regular Game objects
-        List<Game> games = gamesApi.byUserId(username).stream().limit(10).toList();
+        List<Game> games = gamesApi.byUserId(username).stream().limit(maxGames).toList();
 
         // Create opening info map from PGN
         Map<String, OpeningInfo> openingMap = new HashMap<>();

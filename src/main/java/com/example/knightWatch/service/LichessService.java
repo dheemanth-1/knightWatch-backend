@@ -24,6 +24,9 @@ public class LichessService {
     public List<LichessGame> getRecentGames(String username) {
         return gameRepo.findTop10ByUsernameOrderByPlayedAtDesc(username);
     }
+    public List<LichessGame> getAllGames(String username) {
+        return gameRepo.findByUsername(username);
+    }
     public Optional<User> getUserProfile(String username) {
         return Optional.ofNullable(client.users().byId(username).get());
     }

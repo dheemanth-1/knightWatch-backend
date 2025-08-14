@@ -23,12 +23,22 @@ public class LichessGameController {
         this.gameRepo = gameRepo;
     }
 
-    @GetMapping("/{username}")
-    public ResponseEntity<?> getCachedGames(@PathVariable String username) {
+    @GetMapping("/recent/{username}")
+    public ResponseEntity<?> getRecentCachedGames(@PathVariable String username) {
         List<LichessGame> games = lichessService.getRecentGames(username);
         if (games.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(games);
     }
+
+    @GetMapping("/{username}")
+    public ResponseEntity<?> getCachedGames(@PathVariable String username) {
+        List<LichessGame> games = lichessService.getAllGames(username);
+        if (games.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(games);
+    }
+
 }

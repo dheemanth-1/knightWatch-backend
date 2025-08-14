@@ -6,14 +6,19 @@ import chariot.api.UsersApiAuth;
 import chariot.model.*;
 import com.example.knightWatch.model.LichessGame;
 import com.example.knightWatch.model.LichessProfile;
+import com.example.knightWatch.model.PlayerProfile;
 import com.example.knightWatch.repository.LichessGameRepository;
 import com.example.knightWatch.repository.LichessProfileRepository;
+import com.example.knightWatch.repository.PlayerProfileRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.Method;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -26,16 +31,22 @@ public class LichessSyncService {
     private final GamesApiAuth gamesApi;
     private final LichessProfileRepository profileRepo;
     private final LichessGameRepository gameRepo;
+    private final GameStatsService gameStatsService;
+    private final PlayerProfileRepository playerProfileRepo;
 
     public LichessSyncService(ClientAuth client,
                               LichessProfileRepository profileRepo,
-                              LichessGameRepository gameRepo,LichessGameService lichessGameService) {
+                              LichessGameRepository gameRepo,LichessGameService lichessGameService, GameStatsService gameStatsService, PlayerProfileRepository playerProfileRepo) {
         this.userApi = client.users();
         this.gamesApi = client.games();
         this.profileRepo = profileRepo;
         this.gameRepo = gameRepo;
         this.lichessGameService = lichessGameService;
+        this.gameStatsService = gameStatsService;
+        this.playerProfileRepo = playerProfileRepo;
     }
+
+    private static final Logger log = LoggerFactory.getLogger(LichessSyncService.class);
 
     private String tryGetOpening(Game game) {
         try {
@@ -107,6 +118,7 @@ public class LichessSyncService {
     public void syncUser(String username) {
         //logUserGamesInfo(username);
         // Profile
+
         Optional<User> userOpt = Optional.ofNullable(userApi.byId(username).get());
         userOpt.ifPresent(user -> {
             LichessProfile profile = new LichessProfile(user);
@@ -114,17 +126,26 @@ public class LichessSyncService {
         });
 
 
-//        // Recent games (e.g., last 10)
-//        List<Game> games = gamesApi.byUserId(username).stream()//.export(username)
-//                .limit(10).toList();
-//
-//
-//
-//        List<LichessGame> entities = games.stream()
-//                .map(g -> new LichessGame(g, username)) // map to your entity
-//                .collect(Collectors.toList());
-
-        List<LichessGame> entities = lichessGameService.fetchUserGamesWithOpenings(username);
+        double winRate = gameStatsService.calculateOverallStats(username).getWinRate();
+        int maxGames = profileRepo.findByUsername(username).orElseThrow(() -> new RuntimeException("Profile not found")).getRatedGames();
+        log.info("Starting game fetch...");
+        long start = System.currentTimeMillis();
+        List<LichessGame> entities = lichessGameService.fetchUserGamesWithOpenings(username, maxGames);
+        long elapsedMs = System.currentTimeMillis() - start;
+        log.info("Game fetch completed, time taken: {} ms", elapsedMs);
+        log.info("Starting game saving...");
+        start = System.currentTimeMillis();
         gameRepo.saveAll(entities);
+        elapsedMs = System.currentTimeMillis() - start;
+        log.info("Game save completed, time taken: {} ms", elapsedMs);
+        PlayerProfile playerProfile = playerProfileRepo.findByUsername(username);
+        if(playerProfile != null) {
+            playerProfile.setTotalGames(maxGames);
+            playerProfile.setWinRate(winRate);
+            playerProfile.setLastSyncTime(LocalDateTime.now());
+        } else {
+            playerProfile = new PlayerProfile(username, maxGames, winRate, LocalDateTime.now());
+        }
+        playerProfileRepo.save(playerProfile);
     }
 }
