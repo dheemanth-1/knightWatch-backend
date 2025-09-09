@@ -31,39 +31,23 @@ public class LichessGameService {
             params.max(maxGames);
         }).stream().map(Object::toString).toList();
 
-        // Get regular Game objects
-        List<Game> games = gamesApi.byUserId(username).stream().limit(maxGames).toList();
-
-        // Create opening info map from PGN
-        Map<String, OpeningInfo> openingMap = new HashMap<>();
-        for (String pgn : pgnGames) {
-            String gameId = extractFromPgn(pgn, "GameId");
-            String eco = extractFromPgn(pgn, "ECO");
-            String opening = extractFromPgn(pgn, "Opening");
-            String resultNotation = extractFromPgn(pgn,"Result");
-            String black = extractFromPgn(pgn,"Black");
-            String white = extractFromPgn(pgn,"White");
-            String timeControl = extractFromPgn(pgn,"TimeControl");
-            if (gameId != null) {
-                openingMap.put(gameId, new OpeningInfo(gameId, eco, opening, pgn, resultNotation, black, white ,timeControl));
-            }
-        }
-
-        // Convert to LichessGame objects with opening data
         List<LichessGame> lichessGames = new ArrayList<>();
-        for (Game game : games) {
-            LichessGame lichessGame = new LichessGame(game, username);
+        for (String pgn : pgnGames) {
+            Map<String, String> tags = parseTags(pgn);
+            String gameId = tags.get("GameId");
+            String eco = tags.get("ECO");
+            String opening = tags.get("Opening");
+            String resultNotation = tags.get("Result");
+            String black = tags.get("Black");
+            String white = tags.get("White");
+            String timeControl = tags.get("TimeControl");
+            String status = tags.get("Termination");
+            String date = tags.get("UTCDate");
+            String time = tags.get("UTCTime");
 
-            // Set opening name from PGN data
-            OpeningInfo openingInfo = openingMap.get(game.id());
-            if (openingInfo != null) {
-                lichessGame.setOpeningName(openingInfo.getBestOpeningName());
-                // Optionally store PGN in entity if you modified it
-                lichessGame.setPgn(openingInfo.getPgn());
-                lichessGame.setEco(openingInfo.getEco());
-                lichessGame.setResult(openingInfo.getResultFromColor(username));
-            }
 
+            OpeningInfo openingInfo = new OpeningInfo(gameId, eco, opening, pgn, resultNotation, black, white ,timeControl,status, date+time);
+            LichessGame lichessGame = new LichessGame(openingInfo, username);
             lichessGames.add(lichessGame);
         }
 
@@ -75,5 +59,14 @@ public class LichessGameService {
         Pattern regex = Pattern.compile(pattern);
         Matcher matcher = regex.matcher(pgn);
         return matcher.find() ? matcher.group(1) : null;
+    }
+
+    private Map<String, String> parseTags(String pgn) {
+        Map<String, String> tags = new HashMap<>();
+        Matcher matcher = Pattern.compile("\\[(\\w+) \"([^\"]+)\"\\]").matcher(pgn);
+        while (matcher.find()) {
+            tags.put(matcher.group(1), matcher.group(2));
+        }
+        return tags;
     }
 }

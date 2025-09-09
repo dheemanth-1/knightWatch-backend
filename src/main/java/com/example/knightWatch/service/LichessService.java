@@ -28,6 +28,6 @@ public class LichessService {
         return gameRepo.findByUsername(username);
     }
     public Optional<User> getUserProfile(String username) {
-        return Optional.ofNullable(client.users().byId(username).get());
+        return (Optional<User>) client.users().byId(username).maybe(); // always returns Optional<User> so unchecked cast acceptable for now.
     }
 }

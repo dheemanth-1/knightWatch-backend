@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/lichess")
@@ -26,9 +27,9 @@ public class LichessSyncController {
     }
 
     @PostMapping("/sync/{username}")
-    public ResponseEntity<SyncStatusDTO> syncUser(@PathVariable String username) {
+    public ResponseEntity<SyncStatusDTO> syncUser(@PathVariable String username,  @RequestParam(name = "games") Optional<Integer> numberOfGames) {
         try {
-            syncService.syncUser(username);
+            syncService.syncUser(username, numberOfGames);
             PlayerProfile profile =  playerProfileRepository.findByUsername(username);
             if(profile == null) {
                throw new RuntimeException("Profile not found");
@@ -51,5 +52,11 @@ public class LichessSyncController {
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(errorDto);
         }
+    }
+
+    @GetMapping("/sync/games-count/{username}")
+    public ResponseEntity<Integer> getTotalGames(@PathVariable String username) {
+        int totalGames = syncService.getTotalGames(username);
+        return ResponseEntity.ok(totalGames);
     }
 }

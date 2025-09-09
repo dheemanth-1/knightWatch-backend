@@ -9,9 +9,11 @@ public class OpeningInfo {
     private String black;
     private String white;
     private String timeControl;
+    private String status;
+    private String playedAt;
 
 
-    public OpeningInfo(String gameId, String eco, String openingName, String pgn, String resultNotation, String black, String white, String timeControl) {
+    public OpeningInfo(String gameId, String eco, String openingName, String pgn, String resultNotation, String black, String white, String timeControl, String status, String playedAt) {
         this.gameId = gameId;
         this.eco = eco;
         this.openingName = openingName;
@@ -20,6 +22,8 @@ public class OpeningInfo {
         this.black = black;
         this.white = white;
         this.timeControl = timeControl;
+        this.status = status;
+        this.playedAt = playedAt;
     }
 
     public String getResultFromColor(String userId) {
@@ -34,7 +38,7 @@ public class OpeningInfo {
         };
     }
 
-    // Getters and setters
+
     public String getGameId() { return gameId; }
     public void setGameId(String gameId) { this.gameId = gameId; }
 
@@ -81,5 +85,21 @@ public class OpeningInfo {
 
     public void setTimeControl(String timeControl) {
         this.timeControl = timeControl;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getPlayedAt() {
+        return playedAt;
+    }
+
+    public void setPlayedAt(String playedAt) {
+        this.playedAt = playedAt;
     }
 }

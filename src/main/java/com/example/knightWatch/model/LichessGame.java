@@ -1,6 +1,7 @@
 package com.example.knightWatch.model;
 
 import chariot.model.Game;
+import com.example.knightWatch.dto.OpeningInfo;
 import jakarta.persistence.*;
 
 @Entity
@@ -79,11 +80,11 @@ public class LichessGame {
         this.status = status;
     }
 
-    private String username;      // owner of the game
+    private String username;
     private String gameId;
     private String openingName;
     private String result;
-    private String playedAt;      // store as String or use LocalDateTime if parsing
+    private String playedAt;
     private String pgn;
     private String eco;
     private String status;
@@ -99,6 +100,19 @@ public class LichessGame {
         this.status = game.status().name();
         this.playedAt = game.createdAt().toString(); // ISO date
     }
+
+
+    public LichessGame(OpeningInfo openingInfo, String username) {
+        this.username = username;
+        this.gameId = openingInfo.getGameId();
+        this.openingName = openingInfo.getBestOpeningName();
+        this.result = openingInfo.getResultFromColor(username);
+        this.playedAt = openingInfo.getPlayedAt();
+        this.pgn = openingInfo.getPgn();
+        this.eco = openingInfo.getEco();
+        this.status = openingInfo.getStatus();
+    }
+
 
     // Getters & setters
 }

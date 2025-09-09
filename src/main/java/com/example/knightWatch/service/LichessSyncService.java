@@ -60,7 +60,7 @@ public class LichessSyncService {
         }
     }
 
-    public void logUserGamesInfo(String username) {
+    public void logUserGamesInfo(String username) { // was only used for logging/testing purposes
         List<Game> gamesWithoutParams = gamesApi.byUserId(username).stream().toList();
         System.out.println("Games without params: " + gamesWithoutParams.size());
         for (int i = 0; i < Math.min(3, gamesWithoutParams.size()); i++) {
@@ -115,22 +115,27 @@ public class LichessSyncService {
     }
 
     @Transactional
-    public void syncUser(String username) {
-        //logUserGamesInfo(username);
-        // Profile
+    public void syncUser(String username, Optional<Integer> numberOfGames) {
+
 
         Optional<User> userOpt = Optional.ofNullable(userApi.byId(username).get());
         userOpt.ifPresent(user -> {
             LichessProfile profile = new LichessProfile(user);
             profileRepo.save(profile);
         });
-
+        int maxGames = profileRepo.findByUsername(username).orElseThrow(() -> new RuntimeException("Profile not found")).getRatedGames();
+        int numberOfGamesToBeQueried;
+        if (numberOfGames.isPresent() && numberOfGames.get() <= maxGames) {
+            numberOfGamesToBeQueried = numberOfGames.get();
+        } else {
+            numberOfGamesToBeQueried = maxGames;
+        }
 
         double winRate = gameStatsService.calculateOverallStats(username).getWinRate();
-        int maxGames = profileRepo.findByUsername(username).orElseThrow(() -> new RuntimeException("Profile not found")).getRatedGames();
+
         log.info("Starting game fetch...");
         long start = System.currentTimeMillis();
-        List<LichessGame> entities = lichessGameService.fetchUserGamesWithOpenings(username, maxGames);
+        List<LichessGame> entities = lichessGameService.fetchUserGamesWithOpenings(username, numberOfGamesToBeQueried);
         long elapsedMs = System.currentTimeMillis() - start;
         log.info("Game fetch completed, time taken: {} ms", elapsedMs);
         log.info("Starting game saving...");
@@ -144,8 +149,12 @@ public class LichessSyncService {
             playerProfile.setWinRate(winRate);
             playerProfile.setLastSyncTime(LocalDateTime.now());
         } else {
-            playerProfile = new PlayerProfile(username, maxGames, winRate, LocalDateTime.now());
+            playerProfile = new PlayerProfile(username, numberOfGamesToBeQueried, winRate, LocalDateTime.now());
         }
         playerProfileRepo.save(playerProfile);
+    }
+
+    public Integer getTotalGames(String username) {
+        return profileRepo.findByUsername(username).orElseThrow(() -> new RuntimeException("Profile not found")).getRatedGames();
     }
 }
