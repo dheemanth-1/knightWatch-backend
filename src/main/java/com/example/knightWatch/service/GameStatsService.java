@@ -70,6 +70,6 @@ public class GameStatsService {
         double lossRate = total > 0 ? (double) losses / total : 0.0;
         double drawRate = total > 0 ? (double) draws / total : 0.0;
 
-        return new OverallStats(winRate, lossRate, drawRate);
+        return new OverallStats(winRate, lossRate, drawRate, total);
     }
 }

@@ -82,6 +82,7 @@ public class GameStatsServiceTests {
         Assertions.assertEquals(1.0/3, overall.getWinRate(), 1e-6);
         Assertions.assertEquals(1.0/3, overall.getLossRate(), 1e-6);
         Assertions.assertEquals(1.0/3, overall.getDrawRate(), 1e-6);
+        Assertions.assertEquals(3, overall.getNumberOfGames(), 1e-6);
     }
 
     @Test
@@ -92,6 +93,7 @@ public class GameStatsServiceTests {
         Assertions.assertEquals(0.0, overall.getWinRate(), 1e-6);
         Assertions.assertEquals(0.0, overall.getLossRate(), 1e-6);
         Assertions.assertEquals(0.0, overall.getDrawRate(), 1e-6);
+        Assertions.assertEquals(0, overall.getNumberOfGames(), 1e-6);
     }
 
 }

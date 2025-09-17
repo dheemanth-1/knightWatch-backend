@@ -11,6 +11,7 @@ import java.util.Map;
 @Entity
 @Table(name = "lichess_profiles")
 public class LichessProfile {
+
     private static final Logger logger = LoggerFactory.getLogger(LichessProfile.class);
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -109,9 +110,12 @@ public class LichessProfile {
     }
 
     public LichessProfile(chariot.model.User user) {
+        if (user == null || user.id() == null) {
+            throw new IllegalArgumentException("Invalid user data");
+        }
         this.username = user.id();
         this.totalGames = user.accountStats() != null ? user.accountStats().all() : 0;
-        this.ratedGames = user.accountStats()  != null ? user.accountStats() .rated() : 0;
+        this.ratedGames = user.accountStats()  != null ? user.accountStats().rated() : 0;
 
         this.blitzRating = getRating(user.ratings(), StatsPerfType.blitz);
         this.bulletRating = getRating(user.ratings(), StatsPerfType.bullet);

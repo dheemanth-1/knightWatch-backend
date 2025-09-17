@@ -4,14 +4,17 @@ public class OverallStats {
     private double winRate;
     private double lossRate;
     private double drawRate;
+    private long numberOfGames;
 
     public OverallStats() {
     }
 
-    public OverallStats(double winRate, double lossRate, double drawRate) {
+    public OverallStats(double winRate, double lossRate, double drawRate, long numberOfGames) {
         this.winRate = winRate;
         this.lossRate = lossRate;
         this.drawRate = drawRate;
+        this.numberOfGames = numberOfGames;
+
     }
 
     public double getLossRate() {
@@ -38,4 +41,11 @@ public class OverallStats {
         this.winRate = winRate;
     }
 
+    public long getNumberOfGames() {
+        return numberOfGames;
+    }
+
+    public void setNumberOfGames(long numberOfGames) {
+        this.numberOfGames = numberOfGames;
+    }
 }

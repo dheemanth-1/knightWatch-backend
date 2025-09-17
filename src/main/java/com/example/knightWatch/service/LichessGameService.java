@@ -44,9 +44,9 @@ public class LichessGameService {
             String status = tags.get("Termination");
             String date = tags.get("UTCDate");
             String time = tags.get("UTCTime");
+            String formattedDateTime = date.replace(".", "-") + "T" + time;
 
-
-            OpeningInfo openingInfo = new OpeningInfo(gameId, eco, opening, pgn, resultNotation, black, white ,timeControl,status, date+time);
+            OpeningInfo openingInfo = new OpeningInfo(gameId, eco, opening, pgn, resultNotation, black, white ,timeControl,status, formattedDateTime);
             LichessGame lichessGame = new LichessGame(openingInfo, username);
             lichessGames.add(lichessGame);
         }

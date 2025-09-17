@@ -92,6 +92,9 @@ public class LichessGame {
     public LichessGame() {}
 
     public LichessGame(chariot.model.Game game, String username) {
+        if (username == null || game == null) {
+            throw new IllegalArgumentException("Invalid game data");
+        }
         this.username = username;
         this.gameId = game.id();
         this.openingName = game.opening()
@@ -114,5 +117,4 @@ public class LichessGame {
     }
 
 
-    // Getters & setters
 }
