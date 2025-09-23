@@ -4,26 +4,27 @@ import chariot.ClientAuth;
 import chariot.api.GamesApiAuth;
 import chariot.api.UsersApiAuth;
 import chariot.model.*;
+import com.example.knightWatch.dto.SyncCheckDTO;
+import com.example.knightWatch.dto.SyncStatusDTO;
 import com.example.knightWatch.model.LichessGame;
 import com.example.knightWatch.model.LichessProfile;
 import com.example.knightWatch.model.PlayerProfile;
+import com.example.knightWatch.model.SyncStatus;
 import com.example.knightWatch.repository.LichessGameRepository;
 import com.example.knightWatch.repository.LichessProfileRepository;
 import com.example.knightWatch.repository.PlayerProfileRepository;
+import com.example.knightWatch.repository.SyncStatusRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.lang.reflect.Method;
-import java.sql.SQLOutput;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDateTime;
+
+import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 @Service
 public class LichessSyncService {
@@ -34,10 +35,16 @@ public class LichessSyncService {
     private final LichessGameRepository gameRepo;
     private final GameStatsService gameStatsService;
     private final PlayerProfileRepository playerProfileRepo;
+    private final SyncStatusRepository syncStatusRepo;
 
     public LichessSyncService(ClientAuth client,
                               LichessProfileRepository profileRepo,
-                              LichessGameRepository gameRepo,LichessGameService lichessGameService, GameStatsService gameStatsService, PlayerProfileRepository playerProfileRepo) {
+                              LichessGameRepository gameRepo,
+                              LichessGameService lichessGameService,
+                              GameStatsService gameStatsService,
+                              PlayerProfileRepository playerProfileRepo,
+                              SyncStatusRepository syncStatusRepo) {
+
         this.userApi = client.users();
         this.gamesApi = client.games();
         this.profileRepo = profileRepo;
@@ -45,92 +52,22 @@ public class LichessSyncService {
         this.lichessGameService = lichessGameService;
         this.gameStatsService = gameStatsService;
         this.playerProfileRepo = playerProfileRepo;
+        this.syncStatusRepo = syncStatusRepo;
     }
 
     private static final Logger log = LoggerFactory.getLogger(LichessSyncService.class);
 
-    private String tryGetOpening(Game game) {
-        try {
-            if (game.opening().isPresent()) {
-                return game.opening().get().toString();
-            } else {
-                return "No opening data";
-            }
-        } catch (Exception e) {
-            return "Error accessing opening: " + e.getMessage();
-        }
-    }
-
-    public void logUserGamesInfo(String username) { // was only used for logging/testing purposes
-        List<Game> gamesWithoutParams = gamesApi.byUserId(username).stream().toList();
-        System.out.println("Games without params: " + gamesWithoutParams.size());
-        for (int i = 0; i < Math.min(3, gamesWithoutParams.size()); i++) {
-            Game game = gamesWithoutParams.get(i);
-            System.out.println("\n=== Game " + (i+1) + " ===");
-            System.out.println("Game ID: " + game.id());
-            System.out.println("Game object class: " + game.getClass().getName());
-            System.out.println("Available methods: ");
-
-            // Print all available methods
-            Arrays.stream(game.getClass().getMethods())
-                    .filter(method -> method.getName().contains("open") ||
-                            method.getName().contains("Open"))
-                    .forEach(method -> System.out.println("  - " + method.getName()));
-
-            // Try different ways to access opening data
-            System.out.println("Trying game.opening(): " + tryGetOpening(game));
-            System.out.println("Game toString(): " + game.toString());
-        }
-
-        System.out.println("Trying PGN method for user: " + username);
-
-        // Try the PGN method which might include opening data
-        List<String> pgnGames = gamesApi.pgnByUserId(username, params -> {
-            System.out.println("PGN Parameter class: " + params.getClass().getName());
-            // Log available PGN parameters
-            Method[] methods = params.getClass().getMethods();
-            for (Method method : methods) {
-                if (!method.getName().startsWith("get") &&
-                        !method.getName().equals("hashCode") &&
-                        !method.getName().equals("toString") &&
-                        !method.getName().equals("equals") &&
-                        method.getParameterCount() <= 1) {
-                    System.out.println("Available PGN parameter: " + method.getName());
-                }
-            }
-        }).stream().map(Object::toString).toList();
-
-        System.out.println("First PGN game sample:");
-        if (!pgnGames.isEmpty()) {
-            System.out.println(pgnGames.get(0).substring(0, Math.min(500, pgnGames.get(0).length())));
-        }
-        System.out.println("Available methods on gamesApi:");
-        System.out.println(Arrays.toString(gamesApi.getClass().getMethods()));
-//        gamesApi.byUserId(username,
-//                Opt.of(params -> {
-//                    System.out.println("Available parameters:");
-//                    System.out.println(params.getClass().getMethods());
-//                    return params;
-//                })
-//        ).stream().toList();
-    }
-
-    private boolean isRecentSync(LocalDateTime lastSync) {
-        if (lastSync == null) return false;
-        return lastSync.isAfter(LocalDateTime.now().minusHours(1)); // Adjust threshold as needed
-    }
-
     @Transactional(readOnly = true)
-    public boolean isUserAlreadySynced(String username) {
+    public SyncCheckDTO isUserAlreadySynced(String username, int numberOfGamesQueried) {
         try {
-            // Get last game from database
+
             LichessGame lastDbGame = gameRepo.findLatestGameByUsername(username);
 
             if (lastDbGame == null) {
                 log.info("No games in database for {}, sync needed", username);
-                return false;
+                return new SyncCheckDTO(true, null, numberOfGamesQueried, null);
             }
-
+            System.out.println("lastDBGame" + lastDbGame);
             List<String> lastPgnGame = gamesApi.pgnByUserId(username, params -> {
                 params.opening(true);
                 params.tags(true);
@@ -138,7 +75,7 @@ public class LichessSyncService {
             }).stream().map(Object::toString).toList();
             if (lastPgnGame.isEmpty()) {
                 log.warn("Could not fetch latest game from API for {}", username);
-                return false;
+                throw new RuntimeException("Could not fetch latest game from API for " + username);
             }
 
             String date = extractFromPgn(lastPgnGame.getFirst(), "UTCDate");
@@ -162,12 +99,12 @@ public class LichessSyncService {
                 log.info("User {} needs sync. DB last game: {}, API last game: {}",
                         username, lastDbGame.getGameId(), lastApiGameId);
             }
-
-            return isSame;
+            Integer requestedGamesPending = numberOfGamesQueried - (int) gameRepo.countByUsername(username);
+            return new SyncCheckDTO(false, isSame, requestedGamesPending, getOldestSyncedDateGamesDateTime(username));
 
         } catch (Exception e) {
             log.error("Error checking sync status for {}: {}", username, e.getMessage());
-            return false;
+            return new SyncCheckDTO(null, null, null, null);
         }
     }
 
@@ -178,21 +115,9 @@ public class LichessSyncService {
         return matcher.find() ? matcher.group(1) : null;
     }
 
-    private void updateLastSyncTime(String username) {
-        PlayerProfile playerProfile = playerProfileRepo.findByUsername(username);
-        if (playerProfile != null) {
-            playerProfile.setLastSyncTime(LocalDateTime.now());
-            playerProfileRepo.save(playerProfile);
-        }
-    }
     @Transactional
-    public void syncUser(String username, Optional<Integer> numberOfGames) {
-        PlayerProfile existingProfile = playerProfileRepo.findByUsername(username);
-        if (existingProfile != null && isUserAlreadySynced(username)) {
-            log.info("Skipping sync for {} - already up to date", username);
-            updateLastSyncTime(username); // Update sync timestamp even if no games were fetched
-            return;
-        }
+    public SyncStatus syncUser(String username, Optional<Integer> numberOfGames) {
+        Optional<LichessProfile> existingProfile = profileRepo.findByUsername(username);
         User user;
         try {
             user = userApi.byId(username).get();
@@ -202,8 +127,11 @@ public class LichessSyncService {
         } catch (Exception e) {
             throw new RuntimeException("Failed to fetch user from Lichess API: " + e.getMessage(), e);
         }
-        LichessProfile profile = new LichessProfile(user);
-        profileRepo.save(profile);
+        if(existingProfile.isEmpty()) {
+            LichessProfile profile = new LichessProfile(user);
+            profileRepo.save(profile);
+            existingProfile = profileRepo.findByUsername(username);
+        }
         int maxGames = profileRepo.findByUsername(username).orElseThrow(() -> new RuntimeException("Profile not found")).getRatedGames();
         int numberOfGamesToBeQueried;
         if (numberOfGames.isPresent() && numberOfGames.get() <= maxGames) {
@@ -211,15 +139,24 @@ public class LichessSyncService {
         } else {
             numberOfGamesToBeQueried = maxGames;
         }
+        SyncCheckDTO syncCheck = isUserAlreadySynced(username, numberOfGamesToBeQueried);
+        if (existingProfile.isPresent() && syncCheck.latestGameMatch() != null && syncCheck.latestGameMatch() && syncCheck.requestedGamesPending() <= 0) {
+            log.info("Skipping sync for {} - already up to date", username);
+            return syncStatusRepo.findFirstByUsernameOrderBySyncIdDesc(username);
+        }
         log.info("Starting game fetch...");
         long start = System.currentTimeMillis();
-        List<LichessGame> entities = lichessGameService.fetchUserGamesWithOpenings(username, numberOfGamesToBeQueried);
 
+        List<LichessGame> entities;
+        if(syncCheck.freshSync()) {
+            entities = lichessGameService.fetchUserGamesWithOpenings(username, numberOfGamesToBeQueried);
+        } else {
+            entities = lichessGameService.fetchUserGamesWithOpeningsUntilTimeDate(username, syncCheck.requestedGamesPending(), syncCheck.earliestGameDateTime());
+        }
 
         if (entities == null || entities.isEmpty()) {
             log.warn("No games found for user: {}", username);
-            entities = new ArrayList<>();
-            return;
+            return null;
         }
 
         double winRate = gameStatsService.calculateOverallStats(username).getWinRate();
@@ -239,10 +176,44 @@ public class LichessSyncService {
             playerProfile = new PlayerProfile(username, numberOfGamesToBeQueried, winRate, LocalDateTime.now());
         }
         playerProfileRepo.save(playerProfile);
-
+        SyncStatus syncStatus = new SyncStatus(playerProfile.getLastSyncTime().toString(),
+                username,
+                getOldestSyncedDateGamesDateTime(username).toString(),
+                numberOfGamesToBeQueried,
+                true);
+        this.syncStatusRepo.save(syncStatus);
+        return syncStatus;
     }
 
     public Integer getTotalGames(String username) {
         return userApi.byId(username).get().accountStats().rated();
+    }
+
+    public SyncStatusDTO previousSyncCheck(String username) {
+        SyncStatus syncStatus = this.syncStatusRepo.findFirstByUsernameOrderBySyncIdDesc(username);
+        SyncStatusDTO syncStatusDTO;
+        if(syncStatus == null) {
+            syncStatusDTO = new SyncStatusDTO(null, true, null, 0);
+        } else {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS");
+            syncStatusDTO = new SyncStatusDTO(LocalDateTime.parse(syncStatus.getLastSync(), formatter),
+                    syncStatus.isUptoDate(),
+                    syncStatus.getLastLocalGameDate(),
+                    syncStatus.getNumberOfGamesSynced());
+        }
+        return syncStatusDTO;
+    }
+
+    public ZonedDateTime getOldestSyncedDateGamesDateTime(String username) {
+        LichessGame oldestGame = this.gameRepo.findOldestGameByUsername(username);
+        if(oldestGame == null) {
+            return null;
+        }
+        LocalDateTime ldt = LocalDateTime.parse(oldestGame.getPlayedAt());
+        return ldt.atZone(ZoneId.of("UTC"));
+    }
+
+    public List<SyncStatus> syncHistory(String username) {
+        return this.syncStatusRepo.findAllByUsername(username);
     }
 }

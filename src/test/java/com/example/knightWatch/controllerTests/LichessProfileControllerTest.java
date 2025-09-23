@@ -5,6 +5,7 @@ import com.example.knightWatch.controller.LichessProfileController;
 import com.example.knightWatch.model.LichessProfile;
 import com.example.knightWatch.repository.LichessGameRepository;
 import com.example.knightWatch.repository.LichessProfileRepository;
+import com.example.knightWatch.repository.SyncStatusRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -16,10 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -261,7 +259,7 @@ class LichessProfileControllerTest {
             doNothing().when(profileRepo).deleteByUsername(username);
             doNothing().when(gameRepo).deleteAllByUsername(username);
 
-            ResponseEntity<Void> response = controller.deleteUserData(username);
+            ResponseEntity<Map<String, Object>> response = controller.deleteUserData(username);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
             assertThat(response.getBody()).isNull();
@@ -277,7 +275,7 @@ class LichessProfileControllerTest {
             doNothing().when(profileRepo).deleteByUsername(username);
             doNothing().when(gameRepo).deleteAllByUsername(username);
 
-            ResponseEntity<Void> response = controller.deleteUserData(username);
+            ResponseEntity<Map<String, Object>> response = controller.deleteUserData(username);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
             assertThat(response.getBody()).isNull();
@@ -293,7 +291,7 @@ class LichessProfileControllerTest {
             doNothing().when(profileRepo).deleteByUsername(username);
             doNothing().when(gameRepo).deleteAllByUsername(username);
 
-            ResponseEntity<Void> response = controller.deleteUserData(username);
+            ResponseEntity<Map<String, Object>> response = controller.deleteUserData(username);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
             verify(profileRepo).deleteByUsername(username);
@@ -326,7 +324,7 @@ class LichessProfileControllerTest {
             doNothing().when(profileRepo).deleteByUsername(username);
             doNothing().when(gameRepo).deleteAllByUsername(username);
 
-            ResponseEntity<Void> response = controller.deleteUserData(username);
+            ResponseEntity<Map<String, Object>> response = controller.deleteUserData(username);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
             verify(profileRepo).deleteByUsername(username);
@@ -342,7 +340,7 @@ class LichessProfileControllerTest {
             doNothing().when(profileRepo).deleteByUsername(username);
             doNothing().when(gameRepo).deleteAllByUsername(username);
 
-            ResponseEntity<Void> response = controller.deleteUserData(username);
+            ResponseEntity<Map<String, Object>> response = controller.deleteUserData(username);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
 
@@ -375,8 +373,8 @@ class LichessProfileControllerTest {
 
             LichessProfileRepository mockProfileRepo = mock(LichessProfileRepository.class);
             LichessGameRepository mockGameRepo = mock(LichessGameRepository.class);
-
-            LichessProfileController testController = new LichessProfileController(mockProfileRepo, mockGameRepo);
+            SyncStatusRepository mockSyncRepo = mock(SyncStatusRepository.class);
+            LichessProfileController testController = new LichessProfileController(mockProfileRepo, mockGameRepo, mockSyncRepo);
 
             assertThat(testController).isNotNull();
 

@@ -7,6 +7,7 @@ import com.example.knightWatch.dto.OpeningInfo;
 import com.example.knightWatch.model.LichessGame;
 import org.springframework.stereotype.Service;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,10 +25,42 @@ public class LichessGameService {
     private final GamesApi gamesApi;
 
     public List<LichessGame> fetchUserGamesWithOpenings(String username, int maxGames) {
-        // Get PGN data with opening information
+
         List<String> pgnGames = gamesApi.pgnByUserId(username, params -> {
             params.opening(true);
             params.tags(true);
+            params.max(maxGames);
+        }).stream().map(Object::toString).toList();
+
+        List<LichessGame> lichessGames = new ArrayList<>();
+        for (String pgn : pgnGames) {
+            Map<String, String> tags = parseTags(pgn);
+            String gameId = tags.get("GameId");
+            String eco = tags.get("ECO");
+            String opening = tags.get("Opening");
+            String resultNotation = tags.get("Result");
+            String black = tags.get("Black");
+            String white = tags.get("White");
+            String timeControl = tags.get("TimeControl");
+            String status = tags.get("Termination");
+            String date = tags.get("UTCDate");
+            String time = tags.get("UTCTime");
+            String formattedDateTime = date.replace(".", "-") + "T" + time;
+
+            OpeningInfo openingInfo = new OpeningInfo(gameId, eco, opening, pgn, resultNotation, black, white ,timeControl,status, formattedDateTime);
+            LichessGame lichessGame = new LichessGame(openingInfo, username);
+            lichessGames.add(lichessGame);
+        }
+
+        return lichessGames;
+    }
+
+    public List<LichessGame> fetchUserGamesWithOpeningsUntilTimeDate(String username, int maxGames, ZonedDateTime earliestDateTime) {
+
+        List<String> pgnGames = gamesApi.pgnByUserId(username, params -> {
+            params.opening(true);
+            params.tags(true);
+            params.until(earliestDateTime);
             params.max(maxGames);
         }).stream().map(Object::toString).toList();
 

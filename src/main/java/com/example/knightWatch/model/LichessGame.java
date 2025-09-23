@@ -117,4 +117,18 @@ public class LichessGame {
     }
 
 
+    @Override
+    public String toString() {
+        return "LichessGame{" +
+                "id=" + id +
+                ", username='" + username + '\'' +
+                ", gameId='" + gameId + '\'' +
+                ", openingName='" + openingName + '\'' +
+                ", result='" + result + '\'' +
+                ", playedAt='" + playedAt + '\'' +
+                ", pgn='" + pgn + '\'' +
+                ", eco='" + eco + '\'' +
+                ", status='" + status + '\'' +
+                '}';
+    }
 }

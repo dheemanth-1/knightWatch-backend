@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 public class SyncStatusDTO {
     private LocalDateTime lastSync;
-    private boolean isSyncInProgress;
+    private boolean isSyncUpToDate;
     private String lastLocalGameDate;
     private Integer gamesSynced;
 
@@ -12,9 +12,9 @@ public class SyncStatusDTO {
 
     }
 
-    public SyncStatusDTO(LocalDateTime lastSync, boolean isSyncInProgress, String lastLocalGameDate, Integer gamesSynced) {
+    public SyncStatusDTO(LocalDateTime lastSync, boolean isSyncUpToDate, String lastLocalGameDate, Integer gamesSynced) {
         this.lastSync = lastSync;
-        this.isSyncInProgress = isSyncInProgress;
+        this.isSyncUpToDate = isSyncUpToDate;
         this.lastLocalGameDate = lastLocalGameDate;
         this.gamesSynced = gamesSynced;
     }
@@ -27,12 +27,12 @@ public class SyncStatusDTO {
         this.lastSync = lastSync;
     }
 
-    public boolean isSyncInProgress() {
-        return isSyncInProgress;
+    public boolean isSyncUpToDate() {
+        return isSyncUpToDate;
     }
 
-    public void setSyncInProgress(boolean syncInProgress) {
-        isSyncInProgress = syncInProgress;
+    public void setSyncUpToDate(boolean syncUpToDate) {
+        isSyncUpToDate = syncUpToDate;
     }
 
     public String getLastLocalGameDate() {

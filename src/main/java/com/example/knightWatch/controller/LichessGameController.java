@@ -16,7 +16,7 @@ public class LichessGameController {
     private final LichessGameRepository gameRepo;
     private final LichessService lichessService;
 
-    public LichessGameController(LichessGameRepository gameRepo,LichessService lichessService) {
+    public LichessGameController(LichessGameRepository gameRepo, LichessService lichessService) {
         this.lichessService = lichessService;
         this.gameRepo = gameRepo;
     }

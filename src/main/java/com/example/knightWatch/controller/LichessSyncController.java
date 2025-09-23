@@ -3,6 +3,7 @@ package com.example.knightWatch.controller;
 import com.example.knightWatch.dto.SyncStatusDTO;
 import com.example.knightWatch.dto.TotalGamesCount;
 import com.example.knightWatch.model.PlayerProfile;
+import com.example.knightWatch.model.SyncStatus;
 import com.example.knightWatch.repository.LichessGameRepository;
 import com.example.knightWatch.repository.PlayerProfileRepository;
 import com.example.knightWatch.service.LichessSyncService;
@@ -13,7 +14,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
+
+import java.util.List;
 import java.util.Optional;
 
 
@@ -32,9 +34,8 @@ public class LichessSyncController {
     }
 
     @GetMapping("/sync/lastSynced/{username}")
-    public ResponseEntity<String> isSynced(@PathVariable String username) {
-        // TODO make a response body that returns the last time games were synced.
-        return ResponseEntity.ok("TBD");
+    public ResponseEntity<SyncStatusDTO> isSynced(@PathVariable String username) {
+        return ResponseEntity.ok(this.syncService.previousSyncCheck(username));
     }
 
 
@@ -45,18 +46,17 @@ public class LichessSyncController {
                 return ResponseEntity.badRequest()
                         .body(new SyncStatusDTO(null, false, null, null));
             }
-            syncService.syncUser(username, numberOfGames);
+            SyncStatus syncStatus = syncService.syncUser(username, numberOfGames);
             PlayerProfile profile =  playerProfileRepository.findByUsername(username);
             if(profile == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(new SyncStatusDTO(null, false, null, null));
             }
-            int gamesSynced = profile.getTotalGames();
             SyncStatusDTO dto = new SyncStatusDTO(
                     profile.getLastSyncTime(),
-                    false,
-                    gameRepo.findLatestGameDateByUsername(username),
-                    gamesSynced
+                    syncStatus.isUptoDate(),
+                    syncStatus.getLastLocalGameDate(),
+                    syncStatus.getNumberOfGamesSynced()
             );
             return ResponseEntity.ok(dto);
         }catch (IllegalArgumentException e) {
@@ -82,5 +82,14 @@ public class LichessSyncController {
         int totalGames = syncService.getTotalGames(username);
         TotalGamesCount response = new TotalGamesCount(username, totalGames);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/syncHistory/{username}")
+    public ResponseEntity<List<SyncStatus>> syncHistory(@PathVariable String username) {
+        List<SyncStatus> list = syncService.syncHistory(username);
+        if(list.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(list);
     }
 }

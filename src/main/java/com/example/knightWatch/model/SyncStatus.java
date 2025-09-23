@@ -2,7 +2,6 @@ package com.example.knightWatch.model;
 
 import jakarta.persistence.*;
 
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "sync_status")
@@ -10,6 +9,7 @@ public class SyncStatus {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long syncId;
+    @Column(unique = true, nullable = false)
     private String username;
     private String lastSync;
     private String lastLocalGameDate;
@@ -18,13 +18,24 @@ public class SyncStatus {
 
     private SyncStatus() {}
 
-
     public SyncStatus(String lastSync, String username, String lastLocalGameDate, Integer numberOfGamesSynced, boolean isUptoDate) {
         this.lastSync = lastSync;
         this.username = username;
         this.lastLocalGameDate = lastLocalGameDate;
         this.numberOfGamesSynced = numberOfGamesSynced;
         this.isUptoDate = isUptoDate;
+    }
+
+    @Override
+    public String toString() {
+        return "SyncStatus{" +
+                "syncId=" + syncId +
+                ", username='" + username + '\'' +
+                ", lastSync='" + lastSync + '\'' +
+                ", lastLocalGameDate='" + lastLocalGameDate + '\'' +
+                ", numberOfGamesSynced=" + numberOfGamesSynced +
+                ", isUptoDate=" + isUptoDate +
+                '}';
     }
 
     public String getLastSync() {
