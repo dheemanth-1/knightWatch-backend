@@ -1,7 +1,7 @@
 package com.example.knightWatch.controller;
 
-import com.example.knightWatch.model.LichessGame;
-import com.example.knightWatch.repository.LichessGameRepository;
+import com.example.knightWatch.model.LocalGame;
+import com.example.knightWatch.repository.LocalGameRepository;
 import com.example.knightWatch.service.LichessService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,20 +10,20 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/db/lichess/games")
-public class LichessGameController {
+@RequestMapping("/api/db/local/games")
+public class LocalGameController {
 
-    private final LichessGameRepository gameRepo;
+
     private final LichessService lichessService;
 
-    public LichessGameController(LichessGameRepository gameRepo, LichessService lichessService) {
+    public LocalGameController(LichessService lichessService) {
         this.lichessService = lichessService;
-        this.gameRepo = gameRepo;
+
     }
 
     @GetMapping("/recent/{username}")
     public ResponseEntity<?> getRecentCachedGames(@PathVariable String username) {
-        List<LichessGame> games = lichessService.getRecentGames(username);
+        List<LocalGame> games = lichessService.getRecentGames(username);
         if (games.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
@@ -32,7 +32,17 @@ public class LichessGameController {
 
     @GetMapping("/{username}")
     public ResponseEntity<?> getCachedGames(@PathVariable String username) {
-        List<LichessGame> games = lichessService.getAllGames(username);
+        List<LocalGame> games = lichessService.getAllGames(username);
+        if (games.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(games);
+
+    }
+
+    @GetMapping("/{source}/{username}")
+    public ResponseEntity<?> getCachedGamesFromUsernameAndSource(@PathVariable String username, @PathVariable String source) {
+        List<LocalGame> games = lichessService.getAllGamesByUsernameAndSource(username, source);
         if (games.isEmpty()) {
             return ResponseEntity.notFound().build();
         }

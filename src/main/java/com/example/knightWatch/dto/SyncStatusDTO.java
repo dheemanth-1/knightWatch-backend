@@ -7,16 +7,17 @@ public class SyncStatusDTO {
     private boolean isSyncUpToDate;
     private String lastLocalGameDate;
     private Integer gamesSynced;
-
+    private String username;
     public SyncStatusDTO(){
 
     }
 
-    public SyncStatusDTO(LocalDateTime lastSync, boolean isSyncUpToDate, String lastLocalGameDate, Integer gamesSynced) {
+    public SyncStatusDTO(LocalDateTime lastSync, boolean isSyncUpToDate, String lastLocalGameDate, Integer gamesSynced, String username) {
         this.lastSync = lastSync;
         this.isSyncUpToDate = isSyncUpToDate;
         this.lastLocalGameDate = lastLocalGameDate;
         this.gamesSynced = gamesSynced;
+        this.username = username;
     }
 
     public LocalDateTime getLastSync() {
@@ -49,6 +50,14 @@ public class SyncStatusDTO {
 
     public void setGamesSynced(Integer gamesSynced) {
         this.gamesSynced = gamesSynced;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 }
 

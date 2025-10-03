@@ -6,13 +6,11 @@ import chariot.api.UsersApiAuth;
 import chariot.model.*;
 import com.example.knightWatch.dto.SyncCheckDTO;
 import com.example.knightWatch.dto.SyncStatusDTO;
-import com.example.knightWatch.model.LichessGame;
-import com.example.knightWatch.model.LichessProfile;
-import com.example.knightWatch.model.PlayerProfile;
+import com.example.knightWatch.model.LocalGame;
+import com.example.knightWatch.model.LocalProfile;
 import com.example.knightWatch.model.SyncStatus;
-import com.example.knightWatch.repository.LichessGameRepository;
-import com.example.knightWatch.repository.LichessProfileRepository;
-import com.example.knightWatch.repository.PlayerProfileRepository;
+import com.example.knightWatch.repository.LocalGameRepository;
+import com.example.knightWatch.repository.LocalProfileRepository;
 import com.example.knightWatch.repository.SyncStatusRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,18 +29,18 @@ public class LichessSyncService {
     private final LichessGameService lichessGameService;
     private final UsersApiAuth userApi;
     private final GamesApiAuth gamesApi;
-    private final LichessProfileRepository profileRepo;
-    private final LichessGameRepository gameRepo;
+    private final LocalProfileRepository profileRepo;
+    private final LocalGameRepository gameRepo;
     private final GameStatsService gameStatsService;
-    private final PlayerProfileRepository playerProfileRepo;
+    //private final PlayerProfileRepository playerProfileRepo;
     private final SyncStatusRepository syncStatusRepo;
 
     public LichessSyncService(ClientAuth client,
-                              LichessProfileRepository profileRepo,
-                              LichessGameRepository gameRepo,
+                              LocalProfileRepository profileRepo,
+                              LocalGameRepository gameRepo,
                               LichessGameService lichessGameService,
                               GameStatsService gameStatsService,
-                              PlayerProfileRepository playerProfileRepo,
+                              //PlayerProfileRepository playerProfileRepo,
                               SyncStatusRepository syncStatusRepo) {
 
         this.userApi = client.users();
@@ -51,7 +49,7 @@ public class LichessSyncService {
         this.gameRepo = gameRepo;
         this.lichessGameService = lichessGameService;
         this.gameStatsService = gameStatsService;
-        this.playerProfileRepo = playerProfileRepo;
+        //this.playerProfileRepo = playerProfileRepo;
         this.syncStatusRepo = syncStatusRepo;
     }
 
@@ -61,7 +59,7 @@ public class LichessSyncService {
     public SyncCheckDTO isUserAlreadySynced(String username, int numberOfGamesQueried) {
         try {
 
-            LichessGame lastDbGame = gameRepo.findLatestGameByUsername(username);
+            LocalGame lastDbGame = gameRepo.findLatestGameByUsername(username);
 
             if (lastDbGame == null) {
                 log.info("No games in database for {}, sync needed", username);
@@ -117,7 +115,7 @@ public class LichessSyncService {
 
     @Transactional
     public SyncStatus syncUser(String username, Optional<Integer> numberOfGames) {
-        Optional<LichessProfile> existingProfile = profileRepo.findByUsername(username);
+        Optional<LocalProfile> existingProfile = profileRepo.findByUsername(username);
         User user;
         try {
             user = userApi.byId(username).get();
@@ -128,7 +126,7 @@ public class LichessSyncService {
             throw new RuntimeException("Failed to fetch user from Lichess API: " + e.getMessage(), e);
         }
         if(existingProfile.isEmpty()) {
-            LichessProfile profile = new LichessProfile(user);
+            LocalProfile profile = new LocalProfile(user, "lichess");
             profileRepo.save(profile);
             existingProfile = profileRepo.findByUsername(username);
         }
@@ -147,7 +145,7 @@ public class LichessSyncService {
         log.info("Starting game fetch...");
         long start = System.currentTimeMillis();
 
-        List<LichessGame> entities;
+        List<LocalGame> entities;
         if(syncCheck.freshSync()) {
             entities = lichessGameService.fetchUserGamesWithOpenings(username, numberOfGamesToBeQueried);
         } else {
@@ -167,16 +165,16 @@ public class LichessSyncService {
         gameRepo.saveAll(entities);
         elapsedMs = System.currentTimeMillis() - start;
         log.info("Game save completed, time taken: {} ms", elapsedMs);
-        PlayerProfile playerProfile = playerProfileRepo.findByUsername(username);
-        if(playerProfile != null) {
-            playerProfile.setTotalGames(numberOfGamesToBeQueried);
-            playerProfile.setWinRate(winRate);
-            playerProfile.setLastSyncTime(LocalDateTime.now());
-        } else {
-            playerProfile = new PlayerProfile(username, numberOfGamesToBeQueried, winRate, LocalDateTime.now());
-        }
-        playerProfileRepo.save(playerProfile);
-        SyncStatus syncStatus = new SyncStatus(playerProfile.getLastSyncTime().toString(),
+//        PlayerProfile playerProfile = playerProfileRepo.findByUsername(username);
+//        if(playerProfile != null) {
+//            playerProfile.setTotalGames(numberOfGamesToBeQueried);
+//            playerProfile.setWinRate(winRate);
+//            playerProfile.setLastSyncTime(LocalDateTime.now());
+//        } else {
+//            playerProfile = new PlayerProfile(username, numberOfGamesToBeQueried, winRate, LocalDateTime.now());
+//        }
+//        playerProfileRepo.save(playerProfile);
+        SyncStatus syncStatus = new SyncStatus(LocalDateTime.now().toString(),
                 username,
                 getOldestSyncedDateGamesDateTime(username).toString(),
                 numberOfGamesToBeQueried,
@@ -193,19 +191,20 @@ public class LichessSyncService {
         SyncStatus syncStatus = this.syncStatusRepo.findFirstByUsernameOrderBySyncIdDesc(username);
         SyncStatusDTO syncStatusDTO;
         if(syncStatus == null) {
-            syncStatusDTO = new SyncStatusDTO(null, true, null, 0);
+            syncStatusDTO = new SyncStatusDTO(null, true, null, 0, username);
         } else {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS");
             syncStatusDTO = new SyncStatusDTO(LocalDateTime.parse(syncStatus.getLastSync(), formatter),
                     syncStatus.isUptoDate(),
                     syncStatus.getLastLocalGameDate(),
-                    syncStatus.getNumberOfGamesSynced());
+                    syncStatus.getNumberOfGamesSynced(),
+                    syncStatus.getUsername());
         }
         return syncStatusDTO;
     }
 
     public ZonedDateTime getOldestSyncedDateGamesDateTime(String username) {
-        LichessGame oldestGame = this.gameRepo.findOldestGameByUsername(username);
+        LocalGame oldestGame = this.gameRepo.findOldestGameByUsername(username);
         if(oldestGame == null) {
             return null;
         }

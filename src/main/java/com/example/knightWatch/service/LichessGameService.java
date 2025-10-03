@@ -2,9 +2,8 @@ package com.example.knightWatch.service;
 
 import chariot.Client;
 import chariot.api.GamesApi;
-import chariot.model.Game;
 import com.example.knightWatch.dto.OpeningInfo;
-import com.example.knightWatch.model.LichessGame;
+import com.example.knightWatch.model.LocalGame;
 import org.springframework.stereotype.Service;
 
 import java.time.ZonedDateTime;
@@ -24,7 +23,7 @@ public class LichessGameService {
 
     private final GamesApi gamesApi;
 
-    public List<LichessGame> fetchUserGamesWithOpenings(String username, int maxGames) {
+    public List<LocalGame> fetchUserGamesWithOpenings(String username, int maxGames) {
 
         List<String> pgnGames = gamesApi.pgnByUserId(username, params -> {
             params.opening(true);
@@ -32,7 +31,7 @@ public class LichessGameService {
             params.max(maxGames);
         }).stream().map(Object::toString).toList();
 
-        List<LichessGame> lichessGames = new ArrayList<>();
+        List<LocalGame> localGames = new ArrayList<>();
         for (String pgn : pgnGames) {
             Map<String, String> tags = parseTags(pgn);
             String gameId = tags.get("GameId");
@@ -48,14 +47,14 @@ public class LichessGameService {
             String formattedDateTime = date.replace(".", "-") + "T" + time;
 
             OpeningInfo openingInfo = new OpeningInfo(gameId, eco, opening, pgn, resultNotation, black, white ,timeControl,status, formattedDateTime);
-            LichessGame lichessGame = new LichessGame(openingInfo, username);
-            lichessGames.add(lichessGame);
+            LocalGame localGame = new LocalGame(openingInfo, username);
+            localGames.add(localGame);
         }
 
-        return lichessGames;
+        return localGames;
     }
 
-    public List<LichessGame> fetchUserGamesWithOpeningsUntilTimeDate(String username, int maxGames, ZonedDateTime earliestDateTime) {
+    public List<LocalGame> fetchUserGamesWithOpeningsUntilTimeDate(String username, int maxGames, ZonedDateTime earliestDateTime) {
 
         List<String> pgnGames = gamesApi.pgnByUserId(username, params -> {
             params.opening(true);
@@ -64,7 +63,7 @@ public class LichessGameService {
             params.max(maxGames);
         }).stream().map(Object::toString).toList();
 
-        List<LichessGame> lichessGames = new ArrayList<>();
+        List<LocalGame> localGames = new ArrayList<>();
         for (String pgn : pgnGames) {
             Map<String, String> tags = parseTags(pgn);
             String gameId = tags.get("GameId");
@@ -80,11 +79,11 @@ public class LichessGameService {
             String formattedDateTime = date.replace(".", "-") + "T" + time;
 
             OpeningInfo openingInfo = new OpeningInfo(gameId, eco, opening, pgn, resultNotation, black, white ,timeControl,status, formattedDateTime);
-            LichessGame lichessGame = new LichessGame(openingInfo, username);
-            lichessGames.add(lichessGame);
+            LocalGame localGame = new LocalGame(openingInfo, username);
+            localGames.add(localGame);
         }
 
-        return lichessGames;
+        return localGames;
     }
 
     private String extractFromPgn(String pgn, String tagName) {

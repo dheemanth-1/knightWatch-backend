@@ -73,7 +73,8 @@ public class PlayerProfileController {
     }
 
     @DeleteMapping("/{username}")
-    public ResponseEntity<Void> deletePlayer(@PathVariable String username) {
+    public ResponseEntity<Void> deletePlayer
+            (@PathVariable String username) {
         PlayerProfile player = repository.findByUsername(username);
 
         if (player == null) {

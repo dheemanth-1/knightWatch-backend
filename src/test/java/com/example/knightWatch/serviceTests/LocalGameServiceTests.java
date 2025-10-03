@@ -4,7 +4,7 @@ import chariot.Client;
 import chariot.api.GamesApi;
 import chariot.model.Many;
 import chariot.model.Pgn;
-import com.example.knightWatch.model.LichessGame;
+import com.example.knightWatch.model.LocalGame;
 import com.example.knightWatch.service.LichessGameService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,8 +13,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Stream;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -23,7 +21,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class LichessGameServiceTests {
+public class LocalGameServiceTests {
     private Client clientMock;
     private LichessGameService service;
     private GamesApi gamesApiMock;
@@ -54,12 +52,12 @@ public class LichessGameServiceTests {
 
         when(gamesApiMock.pgnByUserId(anyString(), any())).thenReturn(Many.entries(pgnObjects.stream()));
 
-        List<LichessGame> games = service.fetchUserGamesWithOpenings(username, maxGames);
+        List<LocalGame> games = service.fetchUserGamesWithOpenings(username, maxGames);
 
 
         Assertions.assertEquals(2, games.size());
-        LichessGame g1 = games.get(0);
-        LichessGame g2 = games.get(1);
+        LocalGame g1 = games.get(0);
+        LocalGame g2 = games.get(1);
 
 
         Assertions.assertEquals("id1", g1.getGameId());

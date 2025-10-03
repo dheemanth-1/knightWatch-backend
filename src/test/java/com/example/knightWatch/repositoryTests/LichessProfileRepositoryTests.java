@@ -1,8 +1,8 @@
 package com.example.knightWatch.repositoryTests;
 
 
-import com.example.knightWatch.model.LichessProfile;
-import com.example.knightWatch.repository.LichessProfileRepository;
+import com.example.knightWatch.model.LocalProfile;
+import com.example.knightWatch.repository.LocalProfileRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -19,17 +19,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DataJpaTest
 @ActiveProfiles("test")
 @DisplayName("LichessProfileRepository Integration Tests")
-class LichessProfileRepositoryTest {
+class LocalProfileRepositoryTest {
 
     @Autowired
     private TestEntityManager entityManager;
 
     @Autowired
-    private LichessProfileRepository repository;
+    private LocalProfileRepository repository;
 
-    private LichessProfile testProfile1;
-    private LichessProfile testProfile2;
-    private LichessProfile testProfile3;
+    private LocalProfile testProfile1;
+    private LocalProfile testProfile2;
+    private LocalProfile testProfile3;
 
     @BeforeEach
     void setUp() {
@@ -62,10 +62,10 @@ class LichessProfileRepositoryTest {
         entityManager.clear();
     }
 
-    private LichessProfile createTestProfile(String username, int totalGames, int ratedGames,
-                                             int blitzRating, int bulletRating, int rapidRating,
-                                             int classicalRating, int puzzleRating) {
-        LichessProfile profile = new LichessProfile();
+    private LocalProfile createTestProfile(String username, int totalGames, int ratedGames,
+                                           int blitzRating, int bulletRating, int rapidRating,
+                                           int classicalRating, int puzzleRating) {
+        LocalProfile profile = new LocalProfile();
         profile.setUsername(username);
         profile.setTotalGames(totalGames);
         profile.setRatedGames(ratedGames);
@@ -85,10 +85,10 @@ class LichessProfileRepositoryTest {
         @DisplayName("Should return profile for existing username")
         void shouldReturnProfileForExistingUsername() {
 
-            Optional<LichessProfile> result = repository.findByUsername("testuser1");
+            Optional<LocalProfile> result = repository.findByUsername("testuser1");
 
             assertThat(result).isPresent();
-            LichessProfile profile = result.get();
+            LocalProfile profile = result.get();
 
             assertThat(profile.getUsername()).isEqualTo("testuser1");
             assertThat(profile.getTotalGames()).isEqualTo(1500);
@@ -104,7 +104,7 @@ class LichessProfileRepositoryTest {
         @DisplayName("Should return empty optional for non-existent username")
         void shouldReturnEmptyOptionalForNonExistentUsername() {
 
-            Optional<LichessProfile> result = repository.findByUsername("nonexistent");
+            Optional<LocalProfile> result = repository.findByUsername("nonexistent");
 
             assertThat(result).isEmpty();
         }
@@ -113,7 +113,7 @@ class LichessProfileRepositoryTest {
         @DisplayName("Should return empty optional for null username")
         void shouldReturnEmptyOptionalForNullUsername() {
 
-            Optional<LichessProfile> result = repository.findByUsername(null);
+            Optional<LocalProfile> result = repository.findByUsername(null);
 
             assertThat(result).isEmpty();
         }
@@ -121,7 +121,7 @@ class LichessProfileRepositoryTest {
         @Test
         @DisplayName("Should return empty optional for empty string username")
         void shouldReturnEmptyOptionalForEmptyStringUsername() {
-            Optional<LichessProfile> result = repository.findByUsername("");
+            Optional<LocalProfile> result = repository.findByUsername("");
 
             assertThat(result).isEmpty();
         }
@@ -129,8 +129,8 @@ class LichessProfileRepositoryTest {
         @Test
         @DisplayName("Should be case sensitive for usernames")
         void shouldBeCaseSensitiveForUsernames() {
-            Optional<LichessProfile> lowerCase = repository.findByUsername("testuser1");
-            Optional<LichessProfile> upperCase = repository.findByUsername("TESTUSER1");
+            Optional<LocalProfile> lowerCase = repository.findByUsername("testuser1");
+            Optional<LocalProfile> upperCase = repository.findByUsername("TESTUSER1");
 
             assertThat(lowerCase).isPresent();
             assertThat(upperCase).isEmpty();
@@ -139,13 +139,13 @@ class LichessProfileRepositoryTest {
         @Test
         @DisplayName("Should handle username with special characters")
         void shouldHandleUsernameWithSpecialCharacters() {
-            LichessProfile specialProfile = createTestProfile(
+            LocalProfile specialProfile = createTestProfile(
                     "user-name_123", 100, 50, 1500, 1400, 1550, 1600, 1700
             );
             entityManager.persistAndFlush(specialProfile);
             entityManager.clear();
 
-            Optional<LichessProfile> result = repository.findByUsername("user-name_123");
+            Optional<LocalProfile> result = repository.findByUsername("user-name_123");
 
             assertThat(result).isPresent();
             assertThat(result.get().getUsername()).isEqualTo("user-name_123");
@@ -154,16 +154,16 @@ class LichessProfileRepositoryTest {
         @Test
         @DisplayName("Should return profile with zero ratings")
         void shouldReturnProfileWithZeroRatings() {
-            LichessProfile zeroProfile = createTestProfile(
+            LocalProfile zeroProfile = createTestProfile(
                     "newuser", 10, 5, 0, 0, 0, 0, 0
             );
             entityManager.persistAndFlush(zeroProfile);
             entityManager.clear();
 
-            Optional<LichessProfile> result = repository.findByUsername("newuser");
+            Optional<LocalProfile> result = repository.findByUsername("newuser");
 
             assertThat(result).isPresent();
-            LichessProfile profile = result.get();
+            LocalProfile profile = result.get();
             assertThat(profile.getBlitzRating()).isEqualTo(0);
             assertThat(profile.getBulletRating()).isEqualTo(0);
             assertThat(profile.getRapidRating()).isEqualTo(0);
@@ -174,16 +174,16 @@ class LichessProfileRepositoryTest {
         @Test
         @DisplayName("Should return profile with high ratings")
         void shouldReturnProfileWithHighRatings() {
-            LichessProfile highRatingProfile = createTestProfile(
+            LocalProfile highRatingProfile = createTestProfile(
                     "grandmaster", 5000, 4500, 2800, 2700, 2850, 2900, 3200
             );
             entityManager.persistAndFlush(highRatingProfile);
             entityManager.clear();
 
-            Optional<LichessProfile> result = repository.findByUsername("grandmaster");
+            Optional<LocalProfile> result = repository.findByUsername("grandmaster");
 
             assertThat(result).isPresent();
-            LichessProfile profile = result.get();
+            LocalProfile profile = result.get();
             assertThat(profile.getBlitzRating()).isEqualTo(2800);
             assertThat(profile.getBulletRating()).isEqualTo(2700);
             assertThat(profile.getRapidRating()).isEqualTo(2850);
@@ -263,7 +263,7 @@ class LichessProfileRepositoryTest {
         @DisplayName("Should delete profile with special characters in username")
         void shouldDeleteProfileWithSpecialCharactersInUsername() {
 
-            LichessProfile specialProfile = createTestProfile(
+            LocalProfile specialProfile = createTestProfile(
                     "user-name_123", 100, 50, 1500, 1400, 1550, 1600, 1700
             );
             entityManager.persistAndFlush(specialProfile);
@@ -290,8 +290,8 @@ class LichessProfileRepositoryTest {
             assertThat(repository.count()).isEqualTo(2);
             assertThat(repository.findByUsername("testuser2")).isEmpty();
 
-            Optional<LichessProfile> profile1 = repository.findByUsername("testuser1");
-            Optional<LichessProfile> profile3 = repository.findByUsername("testuser3");
+            Optional<LocalProfile> profile1 = repository.findByUsername("testuser1");
+            Optional<LocalProfile> profile3 = repository.findByUsername("testuser3");
 
             assertThat(profile1).isPresent();
             assertThat(profile3).isPresent();
@@ -308,19 +308,19 @@ class LichessProfileRepositoryTest {
         @DisplayName("Should persist and retrieve complete profile data")
         void shouldPersistAndRetrieveCompleteProfileData() {
 
-            LichessProfile complexProfile = createTestProfile(
+            LocalProfile complexProfile = createTestProfile(
                     "complexuser",
                     10000, 9500,
                     2400, 2300, 2450, 2500, 2800
             );
 
-            LichessProfile saved = entityManager.persistAndFlush(complexProfile);
+            LocalProfile saved = entityManager.persistAndFlush(complexProfile);
             entityManager.clear();
 
-            Optional<LichessProfile> retrieved = repository.findByUsername("complexuser");
+            Optional<LocalProfile> retrieved = repository.findByUsername("complexuser");
 
             assertThat(retrieved).isPresent();
-            LichessProfile profile = retrieved.get();
+            LocalProfile profile = retrieved.get();
 
             assertThat(profile.getId()).isNotNull();
             assertThat(profile.getUsername()).isEqualTo("complexuser");
@@ -337,17 +337,17 @@ class LichessProfileRepositoryTest {
         @DisplayName("Should handle profile with minimum values")
         void shouldHandleProfileWithMinimumValues() {
 
-            LichessProfile minProfile = createTestProfile(
+            LocalProfile minProfile = createTestProfile(
                     "minuser", 0, 0, 0, 0, 0, 0, 0
             );
 
             entityManager.persistAndFlush(minProfile);
             entityManager.clear();
 
-            Optional<LichessProfile> retrieved = repository.findByUsername("minuser");
+            Optional<LocalProfile> retrieved = repository.findByUsername("minuser");
 
             assertThat(retrieved).isPresent();
-            LichessProfile profile = retrieved.get();
+            LocalProfile profile = retrieved.get();
             assertThat(profile.getTotalGames()).isEqualTo(0);
             assertThat(profile.getRatedGames()).isEqualTo(0);
             assertThat(profile.getBlitzRating()).isEqualTo(0);
@@ -364,7 +364,7 @@ class LichessProfileRepositoryTest {
             String username = "integrityuser";
             assertThat(repository.findByUsername(username)).isEmpty();
 
-            LichessProfile profile = createTestProfile(
+            LocalProfile profile = createTestProfile(
                     username, 1000, 800, 1500, 1400, 1600, 1700, 1800
             );
             entityManager.persistAndFlush(profile);
@@ -372,17 +372,17 @@ class LichessProfileRepositoryTest {
 
             assertThat(repository.findByUsername(username)).isPresent();
 
-            Optional<LichessProfile> retrieved = repository.findByUsername(username);
+            Optional<LocalProfile> retrieved = repository.findByUsername(username);
             assertThat(retrieved).isPresent();
 
-            LichessProfile existingProfile = retrieved.get();
+            LocalProfile existingProfile = retrieved.get();
             existingProfile.setTotalGames(1100);
             existingProfile.setBlitzRating(1550);
             entityManager.merge(existingProfile);
             entityManager.flush();
             entityManager.clear();
 
-            Optional<LichessProfile> updated = repository.findByUsername(username);
+            Optional<LocalProfile> updated = repository.findByUsername(username);
             assertThat(updated).isPresent();
             assertThat(updated.get().getTotalGames()).isEqualTo(1100);
             assertThat(updated.get().getBlitzRating()).isEqualTo(1550);
@@ -400,7 +400,7 @@ class LichessProfileRepositoryTest {
 
             String username = "concurrentuser";
 
-            LichessProfile profile1 = createTestProfile(username, 100, 80, 1200, 1100, 1250, 1300, 1400);
+            LocalProfile profile1 = createTestProfile(username, 100, 80, 1200, 1100, 1250, 1300, 1400);
             entityManager.persistAndFlush(profile1);
             entityManager.clear();
 
@@ -412,11 +412,11 @@ class LichessProfileRepositoryTest {
 
             assertThat(repository.findByUsername(username)).isEmpty();
 
-            LichessProfile profile2 = createTestProfile(username, 200, 180, 1300, 1200, 1350, 1400, 1500);
+            LocalProfile profile2 = createTestProfile(username, 200, 180, 1300, 1200, 1350, 1400, 1500);
             entityManager.persistAndFlush(profile2);
             entityManager.clear();
 
-            Optional<LichessProfile> final_profile = repository.findByUsername(username);
+            Optional<LocalProfile> final_profile = repository.findByUsername(username);
             assertThat(final_profile).isPresent();
             assertThat(final_profile.get().getTotalGames()).isEqualTo(200);
             assertThat(final_profile.get().getBlitzRating()).isEqualTo(1300);
@@ -427,14 +427,14 @@ class LichessProfileRepositoryTest {
         void shouldEnforceUniqueUsernameConstraint() {
 
             String duplicateUsername = "duplicateuser";
-            LichessProfile profile1 = createTestProfile(duplicateUsername, 100, 80, 1200, 1100, 1250, 1300, 1400);
+            LocalProfile profile1 = createTestProfile(duplicateUsername, 100, 80, 1200, 1100, 1250, 1300, 1400);
 
             entityManager.persistAndFlush(profile1);
             entityManager.clear();
 
             assertThat(repository.findByUsername(duplicateUsername)).isPresent();
 
-            LichessProfile profile2 = createTestProfile(duplicateUsername, 200, 180, 1300, 1200, 1350, 1400, 1500);
+            LocalProfile profile2 = createTestProfile(duplicateUsername, 200, 180, 1300, 1200, 1350, 1400, 1500);
 
             try {
                 entityManager.persistAndFlush(profile2);

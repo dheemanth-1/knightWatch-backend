@@ -2,8 +2,8 @@ package com.example.knightWatch.repositoryTests;
 
 
 
-import com.example.knightWatch.model.LichessGame;
-import com.example.knightWatch.repository.LichessGameRepository;
+import com.example.knightWatch.model.LocalGame;
+import com.example.knightWatch.repository.LocalGameRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -14,7 +14,6 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -22,18 +21,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DataJpaTest
 @ActiveProfiles("test")
 @DisplayName("LichessGameRepository Integration Tests")
-class LichessGameRepositoryTests {
+class LocalGameRepositoryTests {
 
     @Autowired
     private TestEntityManager entityManager;
 
     @Autowired
-    private LichessGameRepository repository;
+    private LocalGameRepository repository;
 
-    private LichessGame game1;
-    private LichessGame game2;
-    private LichessGame game3;
-    private LichessGame gameOtherUser;
+    private LocalGame game1;
+    private LocalGame game2;
+    private LocalGame game3;
+    private LocalGame gameOtherUser;
 
     @BeforeEach
     void setUp() {
@@ -98,10 +97,10 @@ class LichessGameRepositoryTests {
         entityManager.clear();
     }
 
-    private LichessGame createTestGame(String username, String gameId, String openingName,
-                                       String result, String playedAt, String pgn,
-                                       String eco, String status) {
-        LichessGame game = new LichessGame();
+    private LocalGame createTestGame(String username, String gameId, String openingName,
+                                     String result, String playedAt, String pgn,
+                                     String eco, String status) {
+        LocalGame game = new LocalGame();
         game.setUsername(username);
         game.setGameId(gameId);
         game.setOpeningName(openingName);
@@ -121,11 +120,11 @@ class LichessGameRepositoryTests {
         @DisplayName("Should return all games for existing user")
         void shouldReturnAllGamesForExistingUser() {
 
-            List<LichessGame> games = repository.findByUsername("testuser");
+            List<LocalGame> games = repository.findByUsername("testuser");
 
 
             assertThat(games).hasSize(3);
-            assertThat(games).extracting(LichessGame::getGameId)
+            assertThat(games).extracting(LocalGame::getGameId)
                     .containsExactlyInAnyOrder("game001", "game002", "game003");
             assertThat(games).allMatch(game -> "testuser".equals(game.getUsername()));
         }
@@ -134,7 +133,7 @@ class LichessGameRepositoryTests {
         @DisplayName("Should return empty list for non-existent user")
         void shouldReturnEmptyListForNonExistentUser() {
 
-            List<LichessGame> games = repository.findByUsername("nonexistent");
+            List<LocalGame> games = repository.findByUsername("nonexistent");
 
 
             assertThat(games).isEmpty();
@@ -144,8 +143,8 @@ class LichessGameRepositoryTests {
         @DisplayName("Should return games only for specified user")
         void shouldReturnGamesOnlyForSpecifiedUser() {
 
-            List<LichessGame> testUserGames = repository.findByUsername("testuser");
-            List<LichessGame> otherUserGames = repository.findByUsername("otheruser");
+            List<LocalGame> testUserGames = repository.findByUsername("testuser");
+            List<LocalGame> otherUserGames = repository.findByUsername("otheruser");
 
 
             assertThat(testUserGames).hasSize(3);
@@ -158,7 +157,7 @@ class LichessGameRepositoryTests {
         @DisplayName("Should handle empty string username")
         void shouldHandleEmptyStringUsername() {
 
-            List<LichessGame> games = repository.findByUsername("");
+            List<LocalGame> games = repository.findByUsername("");
 
 
             assertThat(games).isEmpty();
@@ -168,7 +167,7 @@ class LichessGameRepositoryTests {
         @DisplayName("Should handle null username")
         void shouldHandleNullUsername() {
 
-            List<LichessGame> games = repository.findByUsername(null);
+            List<LocalGame> games = repository.findByUsername(null);
 
 
             assertThat(games).isEmpty();
@@ -178,7 +177,7 @@ class LichessGameRepositoryTests {
         @DisplayName("Should handle username with special characters")
         void shouldHandleUsernameWithSpecialCharacters() {
 
-            LichessGame specialGame = createTestGame(
+            LocalGame specialGame = createTestGame(
                     "user-name_123", "special001", "Italian Game", "win",
                     LocalDateTime.now().toString(), "1. e4 e5", "C50", "mate"
             );
@@ -186,7 +185,7 @@ class LichessGameRepositoryTests {
             entityManager.clear();
 
 
-            List<LichessGame> games = repository.findByUsername("user-name_123");
+            List<LocalGame> games = repository.findByUsername("user-name_123");
 
 
             assertThat(games).hasSize(1);
@@ -197,8 +196,8 @@ class LichessGameRepositoryTests {
         @DisplayName("Should be case sensitive for usernames")
         void shouldBeCaseSensitiveForUsernames() {
 
-            List<LichessGame> lowerCaseGames = repository.findByUsername("testuser");
-            List<LichessGame> upperCaseGames = repository.findByUsername("TESTUSER");
+            List<LocalGame> lowerCaseGames = repository.findByUsername("testuser");
+            List<LocalGame> upperCaseGames = repository.findByUsername("TESTUSER");
 
 
             assertThat(lowerCaseGames).hasSize(3);
@@ -284,7 +283,7 @@ class LichessGameRepositoryTests {
         @DisplayName("Should return games in descending order by playedAt")
         void shouldReturnGamesInDescendingOrderByPlayedAt() {
 
-            List<LichessGame> games = repository.findTop10ByUsernameOrderByPlayedAtDesc("testuser");
+            List<LocalGame> games = repository.findTop10ByUsernameOrderByPlayedAtDesc("testuser");
 
             assertThat(games).hasSize(3);
 
@@ -305,7 +304,7 @@ class LichessGameRepositoryTests {
 
             LocalDateTime baseTime = LocalDateTime.of(2024, 2, 1, 10, 0, 0);
             for (int i = 4; i <= 15; i++) {
-                LichessGame extraGame = createTestGame(
+                LocalGame extraGame = createTestGame(
                         "testuser",
                         "game" + String.format("%03d", i),
                         "Test Opening " + i,
@@ -319,7 +318,7 @@ class LichessGameRepositoryTests {
             }
             entityManager.clear();
 
-            List<LichessGame> games = repository.findTop10ByUsernameOrderByPlayedAtDesc("testuser");
+            List<LocalGame> games = repository.findTop10ByUsernameOrderByPlayedAtDesc("testuser");
 
             assertThat(games).hasSize(10);
 
@@ -331,7 +330,7 @@ class LichessGameRepositoryTests {
         @DisplayName("Should return empty list for non-existent user")
         void shouldReturnEmptyListForNonExistentUser() {
 
-            List<LichessGame> games = repository.findTop10ByUsernameOrderByPlayedAtDesc("nonexistent");
+            List<LocalGame> games = repository.findTop10ByUsernameOrderByPlayedAtDesc("nonexistent");
 
             assertThat(games).isEmpty();
         }
@@ -340,7 +339,7 @@ class LichessGameRepositoryTests {
         @DisplayName("Should return fewer than 10 games if user has fewer games")
         void shouldReturnFewerThan10GamesIfUserHasFewerGames() {
 
-            List<LichessGame> games = repository.findTop10ByUsernameOrderByPlayedAtDesc("otheruser");
+            List<LocalGame> games = repository.findTop10ByUsernameOrderByPlayedAtDesc("otheruser");
 
             assertThat(games).hasSize(1);
             assertThat(games.get(0).getGameId()).isEqualTo("game004");
@@ -351,17 +350,17 @@ class LichessGameRepositoryTests {
         void shouldHandleGamesWithIdenticalTimestamps() {
 
             String sameTimestamp = LocalDateTime.now().toString();
-            LichessGame sameTime1 = createTestGame("sameuser", "same001", "Opening1", "win", sameTimestamp, "pgn1", "E01", "mate");
-            LichessGame sameTime2 = createTestGame("sameuser", "same002", "Opening2", "loss", sameTimestamp, "pgn2", "E02", "resign");
+            LocalGame sameTime1 = createTestGame("sameuser", "same001", "Opening1", "win", sameTimestamp, "pgn1", "E01", "mate");
+            LocalGame sameTime2 = createTestGame("sameuser", "same002", "Opening2", "loss", sameTimestamp, "pgn2", "E02", "resign");
 
             entityManager.persistAndFlush(sameTime1);
             entityManager.persistAndFlush(sameTime2);
             entityManager.clear();
 
-            List<LichessGame> games = repository.findTop10ByUsernameOrderByPlayedAtDesc("sameuser");
+            List<LocalGame> games = repository.findTop10ByUsernameOrderByPlayedAtDesc("sameuser");
 
             assertThat(games).hasSize(2);
-            assertThat(games).extracting(LichessGame::getGameId)
+            assertThat(games).extracting(LocalGame::getGameId)
                     .containsExactlyInAnyOrder("same001", "same002");
         }
 
@@ -369,8 +368,8 @@ class LichessGameRepositoryTests {
         @DisplayName("Should only return games for specified user")
         void shouldOnlyReturnGamesForSpecifiedUser() {
 
-            List<LichessGame> testUserGames = repository.findTop10ByUsernameOrderByPlayedAtDesc("testuser");
-            List<LichessGame> otherUserGames = repository.findTop10ByUsernameOrderByPlayedAtDesc("otheruser");
+            List<LocalGame> testUserGames = repository.findTop10ByUsernameOrderByPlayedAtDesc("testuser");
+            List<LocalGame> otherUserGames = repository.findTop10ByUsernameOrderByPlayedAtDesc("otheruser");
 
             assertThat(testUserGames).hasSize(3);
             assertThat(otherUserGames).hasSize(1);
@@ -393,9 +392,9 @@ class LichessGameRepositoryTests {
 
             assertThat(latestDate).isEqualTo(game3.getPlayedAt());
 
-            List<LichessGame> allGames = repository.findByUsername("testuser");
+            List<LocalGame> allGames = repository.findByUsername("testuser");
             String expectedLatest = allGames.stream()
-                    .map(LichessGame::getPlayedAt)
+                    .map(LocalGame::getPlayedAt)
                     .max(String::compareTo)
                     .orElse(null);
             assertThat(latestDate).isEqualTo(expectedLatest);
@@ -443,8 +442,8 @@ class LichessGameRepositoryTests {
         void shouldHandleUserWithGamesHavingIdenticalTimestamps() {
 
             String sameTimestamp = LocalDateTime.now().toString();
-            LichessGame sameTime1 = createTestGame("sameuser", "same001", "Opening1", "win", sameTimestamp, "pgn1", "E01", "mate");
-            LichessGame sameTime2 = createTestGame("sameuser", "same002", "Opening2", "loss", sameTimestamp, "pgn2", "E02", "resign");
+            LocalGame sameTime1 = createTestGame("sameuser", "same001", "Opening1", "win", sameTimestamp, "pgn1", "E01", "mate");
+            LocalGame sameTime2 = createTestGame("sameuser", "same002", "Opening2", "loss", sameTimestamp, "pgn2", "E02", "resign");
 
             entityManager.persistAndFlush(sameTime1);
             entityManager.persistAndFlush(sameTime2);
@@ -473,7 +472,7 @@ class LichessGameRepositoryTests {
             String initialLatestDate = repository.findLatestGameDateByUsername("testuser");
 
             LocalDateTime futureTime = LocalDateTime.now().plusDays(1);
-            LichessGame newGame = createTestGame(
+            LocalGame newGame = createTestGame(
                     "testuser", "newest001", "Future Game", "win",
                     futureTime.toString(), "1. e4 e5", "C20", "mate"
             );
@@ -495,7 +494,7 @@ class LichessGameRepositoryTests {
         @DisplayName("Should persist and retrieve complete game data")
         void shouldPersistAndRetrieveCompleteGameData() {
 
-            LichessGame complexGame = createTestGame(
+            LocalGame complexGame = createTestGame(
                     "complexuser",
                     "complex001",
                     "Caro-Kann Defense: Main Line",
@@ -506,13 +505,13 @@ class LichessGameRepositoryTests {
                     "mate"
             );
 
-            LichessGame saved = entityManager.persistAndFlush(complexGame);
+            LocalGame saved = entityManager.persistAndFlush(complexGame);
             entityManager.clear();
 
-            List<LichessGame> retrieved = repository.findByUsername("complexuser");
+            List<LocalGame> retrieved = repository.findByUsername("complexuser");
 
             assertThat(retrieved).hasSize(1);
-            LichessGame game = retrieved.get(0);
+            LocalGame game = retrieved.get(0);
 
             assertThat(game.getId()).isNotNull();
             assertThat(game.getUsername()).isEqualTo("complexuser");
@@ -529,7 +528,7 @@ class LichessGameRepositoryTests {
         @DisplayName("Should handle null values in optional fields")
         void shouldHandleNullValuesInOptionalFields() {
 
-            LichessGame gameWithNulls = new LichessGame();
+            LocalGame gameWithNulls = new LocalGame();
             gameWithNulls.setUsername("nulluser");
             gameWithNulls.setGameId("null001");
             gameWithNulls.setOpeningName(null);
@@ -542,10 +541,10 @@ class LichessGameRepositoryTests {
             entityManager.persistAndFlush(gameWithNulls);
             entityManager.clear();
 
-            List<LichessGame> retrieved = repository.findByUsername("nulluser");
+            List<LocalGame> retrieved = repository.findByUsername("nulluser");
 
             assertThat(retrieved).hasSize(1);
-            LichessGame game = retrieved.get(0);
+            LocalGame game = retrieved.get(0);
 
             assertThat(game.getUsername()).isEqualTo("nulluser");
             assertThat(game.getGameId()).isEqualTo("null001");
@@ -563,8 +562,8 @@ class LichessGameRepositoryTests {
             String username = "integrityuser";
             assertThat(repository.findByUsername(username)).isEmpty();
 
-            LichessGame game1 = createTestGame(username, "int001", "Opening1", "win", LocalDateTime.now().toString(), "pgn1", "E01", "mate");
-            LichessGame game2 = createTestGame(username, "int002", "Opening2", "loss", LocalDateTime.now().plusHours(1).toString(), "pgn2", "E02", "resign");
+            LocalGame game1 = createTestGame(username, "int001", "Opening1", "win", LocalDateTime.now().toString(), "pgn1", "E01", "mate");
+            LocalGame game2 = createTestGame(username, "int002", "Opening2", "loss", LocalDateTime.now().plusHours(1).toString(), "pgn2", "E02", "resign");
 
             entityManager.persistAndFlush(game1);
             entityManager.persistAndFlush(game2);

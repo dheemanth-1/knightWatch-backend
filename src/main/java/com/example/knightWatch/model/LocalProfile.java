@@ -5,14 +5,14 @@ import chariot.model.StatsPerfType;
 import jakarta.persistence.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.sql.SQLOutput;
+
 import java.util.Map;
 
 @Entity
-@Table(name = "lichess_profiles")
-public class LichessProfile {
+@Table(name = "local_profile")
+public class LocalProfile {
 
-    private static final Logger logger = LoggerFactory.getLogger(LichessProfile.class);
+    private static final Logger logger = LoggerFactory.getLogger(LocalProfile.class);
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -85,20 +85,26 @@ public class LichessProfile {
         this.puzzleRating = puzzleRating;
     }
 
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
+    }
+
     private String username;
 
     private int totalGames;
     private int ratedGames;
-
-
     private int blitzRating;
     private int bulletRating;
     private int rapidRating;
     private int classicalRating;
     private int puzzleRating;
+    private String source;
 
-
-    public LichessProfile() {
+    public LocalProfile() {
     }
 
     private static int getRating(Map<StatsPerfType, StatsPerf> ratings, StatsPerfType type) {
@@ -109,19 +115,19 @@ public class LichessProfile {
         return 0; // default if not found or wrong type
     }
 
-    public LichessProfile(chariot.model.User user) {
+    public LocalProfile(chariot.model.User user, String source) {
         if (user == null || user.id() == null) {
             throw new IllegalArgumentException("Invalid user data");
         }
         this.username = user.id();
         this.totalGames = user.accountStats() != null ? user.accountStats().all() : 0;
         this.ratedGames = user.accountStats()  != null ? user.accountStats().rated() : 0;
-
         this.blitzRating = getRating(user.ratings(), StatsPerfType.blitz);
         this.bulletRating = getRating(user.ratings(), StatsPerfType.bullet);
         this.rapidRating = getRating(user.ratings(), StatsPerfType.rapid);
         this.classicalRating = getRating(user.ratings(), StatsPerfType.classical);
         this.puzzleRating = getRating(user.ratings(), StatsPerfType.puzzle);
+        this.source = source;
     }
 
 }

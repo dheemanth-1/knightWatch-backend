@@ -2,8 +2,8 @@ package com.example.knightWatch.service;
 
 import com.example.knightWatch.dto.GameStatsByOpening;
 import com.example.knightWatch.dto.OverallStats;
-import com.example.knightWatch.model.LichessGame;
-import com.example.knightWatch.repository.LichessGameRepository;
+import com.example.knightWatch.model.LocalGame;
+import com.example.knightWatch.repository.LocalGameRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -13,17 +13,17 @@ import java.util.stream.Collectors;
 
 @Service
 public class GameStatsService {
-    private final LichessGameRepository gameRepository;
+    private final LocalGameRepository gameRepository;
 
-    public GameStatsService(LichessGameRepository gameRepository) {
+    public GameStatsService(LocalGameRepository gameRepository) {
         this.gameRepository = gameRepository;
     }
 
     public List<GameStatsByOpening> calculateStatsByOpening(String userId) {
-        List<LichessGame> games = gameRepository.findByUsername(userId);
+        List<LocalGame> games = gameRepository.findByUsername(userId);
 
         // Group by opening name
-        Map<String, List<LichessGame>> byOpening = games.stream()
+        Map<String, List<LocalGame>> byOpening = games.stream()
                 .filter(g -> g.getOpeningName() != null && g.getResult() != null)
                 .collect(Collectors.groupingBy(g -> {
                     String opening = g.getOpeningName();
@@ -32,9 +32,9 @@ public class GameStatsService {
                 }));
 
         List<GameStatsByOpening> statsList = new ArrayList<>();
-        for (Map.Entry<String, List<LichessGame>> entry : byOpening.entrySet()) {
+        for (Map.Entry<String, List<LocalGame>> entry : byOpening.entrySet()) {
             String baseOpeningName = entry.getKey();
-            List<LichessGame> gamesForOpening = entry.getValue();
+            List<LocalGame> gamesForOpening = entry.getValue();
 
             long wins = gamesForOpening.stream().filter(g -> "won".equals(g.getResult())).count();
             long losses = gamesForOpening.stream().filter(g -> "lost".equals(g.getResult())).count();
@@ -56,7 +56,7 @@ public class GameStatsService {
     }
 
     public OverallStats calculateOverallStats(String userId) {
-        List<LichessGame> games = gameRepository.findByUsername(userId)
+        List<LocalGame> games = gameRepository.findByUsername(userId)
                 .stream()
                 .filter(g -> g.getResult() != null)
                 .toList();

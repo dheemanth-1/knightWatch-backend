@@ -1,8 +1,5 @@
 package com.example.knightWatch.controller;
 
-import chariot.Client;
-import chariot.model.User;
-import com.example.knightWatch.model.LichessGame;
 import com.example.knightWatch.service.LichessService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
