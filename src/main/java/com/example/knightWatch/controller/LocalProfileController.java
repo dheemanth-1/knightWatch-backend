@@ -1,6 +1,7 @@
 package com.example.knightWatch.controller;
 
 import com.example.knightWatch.model.LocalProfile;
+import com.example.knightWatch.repository.ChesscomSyncStatusRepository;
 import com.example.knightWatch.repository.LocalGameRepository;
 import com.example.knightWatch.repository.LocalProfileRepository;
 import com.example.knightWatch.repository.SyncStatusRepository;
@@ -25,11 +26,13 @@ public class LocalProfileController {
     private final LocalProfileRepository profileRepo;
     private final LocalGameRepository gameRepo;
     private final SyncStatusRepository syncRepo;
+    private final ChesscomSyncStatusRepository chesscomSyncRepo;
 
-    public LocalProfileController(LocalProfileRepository profileRepo, LocalGameRepository gameRepo, SyncStatusRepository syncRepo) {
+    public LocalProfileController(LocalProfileRepository profileRepo, LocalGameRepository gameRepo, SyncStatusRepository syncRepo, ChesscomSyncStatusRepository chesscomSyncRepo) {
         this.profileRepo = profileRepo;
         this.gameRepo = gameRepo;
         this.syncRepo = syncRepo;
+        this.chesscomSyncRepo = chesscomSyncRepo;
     }
 
     @Operation(summary = "Get cached Lichess profile by username")
@@ -81,14 +84,26 @@ public class LocalProfileController {
                 ));
                 return ResponseEntity.notFound().build();
             }
+            String source = profileRepo.findByUsername(username).get().getSource();
 
-            long profileCount = profileRepo.countByUsername(username);
+            long profileCount = profileRepo.countByUsernameAndSource(username, source);
             long gameCount = gameRepo.countByUsername(username);
-            long syncCount = syncRepo.countByUsername(username);
 
-            profileRepo.deleteByUsername(username);
+            long syncCount;
+            if(source.equals("chesscom")) {
+                syncCount = syncRepo.countByUsername(username);
+            } else {
+                syncCount = chesscomSyncRepo.countByUsername(username);
+            }
+            profileRepo.deleteByUsernameAndSource(username, source);
             gameRepo.deleteAllByUsername(username);
-            syncRepo.deleteAllByUsername(username);
+
+            if(source.equals("chesscom")) {
+                chesscomSyncRepo.deleteAllByUsername(username);
+            }
+            else {
+                syncRepo.deleteAllByUsername(username);
+            }
 
             response.put("success", true);
             response.put("message", "Successfully deleted all data for user: " + username);
@@ -120,9 +135,15 @@ public class LocalProfileController {
         Map<String, Object> response = new HashMap<>();
 
         try {
+            boolean statusExists;
+            if(source.equals("chesscom")) {
+                statusExists = chesscomSyncRepo.existsByUsername(username);
+            } else {
+                statusExists = syncRepo.existsByUsername(username);
+            }
             boolean userHasData = profileRepo.existsByUsernameAndSource(username, source) ||
                     gameRepo.existsByUsername(username) ||
-                    syncRepo.existsByUsername(username);
+                    statusExists;
 
             if (!userHasData) {
                 response.put("success", false);
@@ -137,12 +158,22 @@ public class LocalProfileController {
 
             long profileCount = profileRepo.countByUsernameAndSource(username, source);
             long gameCount = gameRepo.countByUsername(username);
-            long syncCount = syncRepo.countByUsername(username);
 
+            long syncCount;
+            if(source.equals("chesscom")) {
+                syncCount = syncRepo.countByUsername(username);
+            } else {
+                syncCount = chesscomSyncRepo.countByUsername(username);
+            }
             profileRepo.deleteByUsernameAndSource(username, source);
             gameRepo.deleteAllByUsername(username);
-            syncRepo.deleteAllByUsername(username);
 
+            if(source.equals("chesscom")) {
+                chesscomSyncRepo.deleteAllByUsername(username);
+            }
+            else {
+                syncRepo.deleteAllByUsername(username);
+            }
             response.put("success", true);
             response.put("message", "Successfully deleted all data for user: " + username);
             response.put("deletedItems", Map.of(

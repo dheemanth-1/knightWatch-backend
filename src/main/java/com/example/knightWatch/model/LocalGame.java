@@ -123,6 +123,7 @@ public class LocalGame {
         this.pgn = openingInfo.getPgn();
         this.eco = openingInfo.getEco();
         this.status = openingInfo.getStatus();
+        this.source = openingInfo.getSource();
     }
 
 

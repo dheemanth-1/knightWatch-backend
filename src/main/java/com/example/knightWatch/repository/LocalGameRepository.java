@@ -42,4 +42,6 @@ public interface LocalGameRepository extends JpaRepository<LocalGame, Long> {
     boolean existsByUsername(String username);
 
     long countByUsername(String username);
+
+    long countByUsernameAndSource(String username, String source);
 }

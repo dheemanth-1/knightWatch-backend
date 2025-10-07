@@ -8,7 +8,7 @@ import com.example.knightWatch.dto.SyncCheckDTO;
 import com.example.knightWatch.dto.SyncStatusDTO;
 import com.example.knightWatch.model.LocalGame;
 import com.example.knightWatch.model.LocalProfile;
-import com.example.knightWatch.model.SyncStatus;
+import com.example.knightWatch.model.LichessSyncStatus;
 import com.example.knightWatch.repository.LocalGameRepository;
 import com.example.knightWatch.repository.LocalProfileRepository;
 import com.example.knightWatch.repository.SyncStatusRepository;
@@ -114,7 +114,7 @@ public class LichessSyncService {
     }
 
     @Transactional
-    public SyncStatus syncUser(String username, Optional<Integer> numberOfGames) {
+    public LichessSyncStatus syncUser(String username, Optional<Integer> numberOfGames) {
         Optional<LocalProfile> existingProfile = profileRepo.findByUsername(username);
         User user;
         try {
@@ -157,7 +157,7 @@ public class LichessSyncService {
             return null;
         }
 
-        double winRate = gameStatsService.calculateOverallStats(username).getWinRate();
+        //double winRate = gameStatsService.calculateOverallStats(username).getWinRate();
         long elapsedMs = System.currentTimeMillis() - start;
         log.info("Game fetch completed, time taken: {} ms", elapsedMs);
         log.info("Starting game saving...");
@@ -174,13 +174,13 @@ public class LichessSyncService {
 //            playerProfile = new PlayerProfile(username, numberOfGamesToBeQueried, winRate, LocalDateTime.now());
 //        }
 //        playerProfileRepo.save(playerProfile);
-        SyncStatus syncStatus = new SyncStatus(LocalDateTime.now().toString(),
+        LichessSyncStatus lichessSyncStatus = new LichessSyncStatus(LocalDateTime.now().toString(),
                 username,
                 getOldestSyncedDateGamesDateTime(username).toString(),
                 numberOfGamesToBeQueried,
                 true);
-        this.syncStatusRepo.save(syncStatus);
-        return syncStatus;
+        this.syncStatusRepo.save(lichessSyncStatus);
+        return lichessSyncStatus;
     }
 
     public Integer getTotalGames(String username) {
@@ -188,17 +188,17 @@ public class LichessSyncService {
     }
 
     public SyncStatusDTO previousSyncCheck(String username) {
-        SyncStatus syncStatus = this.syncStatusRepo.findFirstByUsernameOrderBySyncIdDesc(username);
+        LichessSyncStatus lichessSyncStatus = this.syncStatusRepo.findFirstByUsernameOrderBySyncIdDesc(username);
         SyncStatusDTO syncStatusDTO;
-        if(syncStatus == null) {
+        if(lichessSyncStatus == null) {
             syncStatusDTO = new SyncStatusDTO(null, true, null, 0, username);
         } else {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS");
-            syncStatusDTO = new SyncStatusDTO(LocalDateTime.parse(syncStatus.getLastSync(), formatter),
-                    syncStatus.isUptoDate(),
-                    syncStatus.getLastLocalGameDate(),
-                    syncStatus.getNumberOfGamesSynced(),
-                    syncStatus.getUsername());
+            syncStatusDTO = new SyncStatusDTO(LocalDateTime.parse(lichessSyncStatus.getLastSync(), formatter),
+                    lichessSyncStatus.isUptoDate(),
+                    lichessSyncStatus.getLastLocalGameDate(),
+                    lichessSyncStatus.getNumberOfGamesSynced(),
+                    lichessSyncStatus.getUsername());
         }
         return syncStatusDTO;
     }
@@ -212,7 +212,7 @@ public class LichessSyncService {
         return ldt.atZone(ZoneId.of("UTC"));
     }
 
-    public List<SyncStatus> syncHistory(String username) {
+    public List<LichessSyncStatus> syncHistory(String username) {
         return this.syncStatusRepo.findAllByUsername(username);
     }
 }

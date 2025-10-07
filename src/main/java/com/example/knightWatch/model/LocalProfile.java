@@ -2,6 +2,7 @@ package com.example.knightWatch.model;
 
 import chariot.model.StatsPerf;
 import chariot.model.StatsPerfType;
+import com.example.knightWatch.dto.ChesscomPlayerDTO;
 import jakarta.persistence.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -127,6 +128,22 @@ public class LocalProfile {
         this.rapidRating = getRating(user.ratings(), StatsPerfType.rapid);
         this.classicalRating = getRating(user.ratings(), StatsPerfType.classical);
         this.puzzleRating = getRating(user.ratings(), StatsPerfType.puzzle);
+        this.source = source;
+    }
+
+    public LocalProfile(ChesscomPlayerDTO chesscomPlayerDTO, String source) {
+        if(chesscomPlayerDTO == null || chesscomPlayerDTO.userId() == null) {
+            throw new IllegalArgumentException("Invalid User Data");
+        }
+
+        this.username = chesscomPlayerDTO.userId();
+        this.totalGames = chesscomPlayerDTO.totalGamesBlitz() + chesscomPlayerDTO.totalGamesRapid() + chesscomPlayerDTO.totalGamesBullet() + chesscomPlayerDTO.totalGamesClassical();
+        this.ratedGames = this.totalGames;
+        this.blitzRating = chesscomPlayerDTO.blitzRating();
+        this.bulletRating = chesscomPlayerDTO.bulletRating();
+        this.rapidRating = chesscomPlayerDTO.rapidRating();
+        this.classicalRating = chesscomPlayerDTO.classicRating();
+        this.puzzleRating = chesscomPlayerDTO.puzzleRating();
         this.source = source;
     }
 

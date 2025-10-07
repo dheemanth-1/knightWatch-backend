@@ -5,20 +5,20 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "sync_status")
-public class SyncStatus {
+public class LichessSyncStatus {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long syncId;
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private String username;
     private String lastSync;
     private String lastLocalGameDate;
     private Integer numberOfGamesSynced;
     private boolean isUptoDate;
 
-    private SyncStatus() {}
+    private LichessSyncStatus() {}
 
-    public SyncStatus(String lastSync, String username, String lastLocalGameDate, Integer numberOfGamesSynced, boolean isUptoDate) {
+    public LichessSyncStatus(String lastSync, String username, String lastLocalGameDate, Integer numberOfGamesSynced, boolean isUptoDate) {
         this.lastSync = lastSync;
         this.username = username;
         this.lastLocalGameDate = lastLocalGameDate;

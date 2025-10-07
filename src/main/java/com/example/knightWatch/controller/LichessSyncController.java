@@ -3,7 +3,7 @@ package com.example.knightWatch.controller;
 import com.example.knightWatch.dto.SyncStatusDTO;
 import com.example.knightWatch.dto.TotalGamesCount;
 import com.example.knightWatch.model.PlayerProfile;
-import com.example.knightWatch.model.SyncStatus;
+import com.example.knightWatch.model.LichessSyncStatus;
 import com.example.knightWatch.repository.LocalGameRepository;
 import com.example.knightWatch.repository.PlayerProfileRepository;
 import com.example.knightWatch.service.LichessSyncService;
@@ -48,20 +48,20 @@ public class LichessSyncController {
                 return ResponseEntity.badRequest()
                         .body(new SyncStatusDTO(null, false, null, null, username));
             }
-            SyncStatus syncStatus = syncService.syncUser(username, numberOfGames);
+            LichessSyncStatus lichessSyncStatus = syncService.syncUser(username, numberOfGames);
             PlayerProfile profile =  playerProfileRepository.findByUsername(username);
             if(profile == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(new SyncStatusDTO(null, false, null, null, username));
             }
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS");
-            var lastSyncDateTime = LocalDateTime.parse(syncStatus.getLastSync(), formatter);
+            var lastSyncDateTime = LocalDateTime.parse(lichessSyncStatus.getLastSync(), formatter);
             SyncStatusDTO dto = new SyncStatusDTO(
                     lastSyncDateTime,
-                    syncStatus.isUptoDate(),
-                    syncStatus.getLastLocalGameDate(),
-                    syncStatus.getNumberOfGamesSynced(),
-                    syncStatus.getUsername()
+                    lichessSyncStatus.isUptoDate(),
+                    lichessSyncStatus.getLastLocalGameDate(),
+                    lichessSyncStatus.getNumberOfGamesSynced(),
+                    lichessSyncStatus.getUsername()
             );
             return ResponseEntity.ok(dto);
         }catch (IllegalArgumentException e) {
@@ -91,8 +91,8 @@ public class LichessSyncController {
     }
 
     @GetMapping("/syncHistory/{username}")
-    public ResponseEntity<List<SyncStatus>> syncHistory(@PathVariable String username) {
-        List<SyncStatus> list = syncService.syncHistory(username);
+    public ResponseEntity<List<LichessSyncStatus>> syncHistory(@PathVariable String username) {
+        List<LichessSyncStatus> list = syncService.syncHistory(username);
         if(list.isEmpty()) {
             return ResponseEntity.notFound().build();
         }

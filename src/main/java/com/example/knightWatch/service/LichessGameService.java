@@ -46,7 +46,7 @@ public class LichessGameService {
             String time = tags.get("UTCTime");
             String formattedDateTime = date.replace(".", "-") + "T" + time;
 
-            OpeningInfo openingInfo = new OpeningInfo(gameId, eco, opening, pgn, resultNotation, black, white ,timeControl,status, formattedDateTime);
+            OpeningInfo openingInfo = new OpeningInfo(gameId, eco, opening, pgn, resultNotation, black, white ,timeControl,status, formattedDateTime, "lichess");
             LocalGame localGame = new LocalGame(openingInfo, username);
             localGames.add(localGame);
         }
@@ -78,7 +78,7 @@ public class LichessGameService {
             String time = tags.get("UTCTime");
             String formattedDateTime = date.replace(".", "-") + "T" + time;
 
-            OpeningInfo openingInfo = new OpeningInfo(gameId, eco, opening, pgn, resultNotation, black, white ,timeControl,status, formattedDateTime);
+            OpeningInfo openingInfo = new OpeningInfo(gameId, eco, opening, pgn, resultNotation, black, white ,timeControl,status, formattedDateTime, "lichess");
             LocalGame localGame = new LocalGame(openingInfo, username);
             localGames.add(localGame);
         }

@@ -9,8 +9,13 @@ public record ChesscomPlayerDTO(
         Long last_online,
         Integer totalGamesBlitz,
         Integer totalGamesRapid,
+        Integer totalGamesBullet,
+        Integer totalGamesClassical,
         Integer blitzRating,
         Integer rapidRating,
+        Integer bulletRating,
+        Integer classicRating,
+        Integer puzzleRating,
         String url
 ) {
 }
