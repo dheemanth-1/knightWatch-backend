@@ -2,19 +2,17 @@ package com.example.knightWatch.serviceTests;
 import chariot.Client;
 import chariot.api.UsersApi;
 import chariot.model.*;
-import com.example.knightWatch.model.LichessGame;
-import com.example.knightWatch.repository.LichessGameRepository;
+import com.example.knightWatch.model.LocalGame;
+import com.example.knightWatch.repository.LocalGameRepository;
 import com.example.knightWatch.service.LichessService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.stubbing.Answer;
 
 import java.net.URI;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,7 +27,7 @@ class LichessServiceTests {
     private Client clientMock;
 
     @Mock
-    private LichessGameRepository gameRepoMock;
+    private LocalGameRepository gameRepoMock;
 
     @Mock
     private UsersApi usersApiMock;
@@ -51,13 +49,13 @@ class LichessServiceTests {
     void getRecentGames_returnsTop10GamesByUsername() {
 
         String username = "testuser";
-        List<LichessGame> expectedGames = createSampleGames(username, 5);
+        List<LocalGame> expectedGames = createSampleGames(username, 5);
 
         when(gameRepoMock.findTop10ByUsernameOrderByPlayedAtDesc(username))
                 .thenReturn(expectedGames);
 
 
-        List<LichessGame> actualGames = lichessService.getRecentGames(username);
+        List<LocalGame> actualGames = lichessService.getRecentGames(username);
 
 
         assertEquals(expectedGames, actualGames);
@@ -74,7 +72,7 @@ class LichessServiceTests {
                 .thenReturn(List.of());
 
 
-        List<LichessGame> actualGames = lichessService.getRecentGames(username);
+        List<LocalGame> actualGames = lichessService.getRecentGames(username);
 
 
         assertTrue(actualGames.isEmpty());
@@ -85,12 +83,12 @@ class LichessServiceTests {
     void getAllGames_returnsAllGamesByUsername() {
 
         String username = "testuser";
-        List<LichessGame> expectedGames = createSampleGames(username, 15);
+        List<LocalGame> expectedGames = createSampleGames(username, 15);
 
         when(gameRepoMock.findByUsername(username)).thenReturn(expectedGames);
 
 
-        List<LichessGame> actualGames = lichessService.getAllGames(username);
+        List<LocalGame> actualGames = lichessService.getAllGames(username);
 
 
         assertEquals(expectedGames, actualGames);
@@ -106,7 +104,7 @@ class LichessServiceTests {
         when(gameRepoMock.findByUsername(username)).thenReturn(List.of());
 
 
-        List<LichessGame> actualGames = lichessService.getAllGames(username);
+        List<LocalGame> actualGames = lichessService.getAllGames(username);
 
 
         assertTrue(actualGames.isEmpty());
@@ -193,10 +191,10 @@ class LichessServiceTests {
     }
 
     // Helper method to create sample games
-    private List<LichessGame> createSampleGames(String username, int count) {
-        List<LichessGame> games = new java.util.ArrayList<>();
+    private List<LocalGame> createSampleGames(String username, int count) {
+        List<LocalGame> games = new java.util.ArrayList<>();
         for (int i = 0; i < count; i++) {
-            LichessGame game = new LichessGame();
+            LocalGame game = new LocalGame();
             game.setGameId("game" + i);
             game.setUsername(username);
             game.setResult(i % 2 == 0 ? "1-0" : "0-1");
@@ -213,7 +211,7 @@ class LichessServiceTests {
     void constructor_initializesFieldsCorrectly() {
 
         Client testClient = mock(Client.class);
-        LichessGameRepository testRepo = mock(LichessGameRepository.class);
+        LocalGameRepository testRepo = mock(LocalGameRepository.class);
 
         LichessService service = new LichessService(testClient, testRepo);
 
@@ -224,7 +222,7 @@ class LichessServiceTests {
     void getRecentGames_verifyRepositoryMethodCalled() {
 
         String username = "verifyuser";
-        List<LichessGame> emptyList = List.of();
+        List<LocalGame> emptyList = List.of();
         when(gameRepoMock.findTop10ByUsernameOrderByPlayedAtDesc(username))
                 .thenReturn(emptyList);
 
@@ -240,7 +238,7 @@ class LichessServiceTests {
     void getAllGames_verifyRepositoryMethodCalled() {
 
         String username = "verifyuser";
-        List<LichessGame> emptyList = List.of();
+        List<LocalGame> emptyList = List.of();
         when(gameRepoMock.findByUsername(username)).thenReturn(emptyList);
 
 

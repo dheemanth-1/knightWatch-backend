@@ -1,10 +1,9 @@
 package com.example.knightWatch.service;
 
 import chariot.Client;
-import chariot.ClientAuth;
 import chariot.model.User;
-import com.example.knightWatch.model.LichessGame;
-import com.example.knightWatch.repository.LichessGameRepository;
+import com.example.knightWatch.model.LocalGame;
+import com.example.knightWatch.repository.LocalGameRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,16 +14,17 @@ import java.util.Optional;
 public class LichessService {
 
     private final Client client;
-    private final LichessGameRepository gameRepo;
+    private final LocalGameRepository gameRepo;
 
-    public LichessService(Client client,LichessGameRepository gameRepo) {
+    public LichessService(Client client, LocalGameRepository gameRepo) {
         this.client = client;
         this.gameRepo = gameRepo;
     }
-    public List<LichessGame> getRecentGames(String username) {
+    public List<LocalGame> getRecentGames(String username) {
         return gameRepo.findTop10ByUsernameOrderByPlayedAtDesc(username);
     }
-    public List<LichessGame> getAllGames(String username) {
+    public List<LocalGame> getAllGamesByUsernameAndSource(String username, String source) {return gameRepo.findByUsernameAndSource(username, source);}
+    public List<LocalGame> getAllGames(String username) {
         return gameRepo.findByUsername(username);
     }
     public Optional<User> getUserProfile(String username) {

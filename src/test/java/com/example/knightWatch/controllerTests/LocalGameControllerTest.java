@@ -1,7 +1,7 @@
 package com.example.knightWatch.controllerTests;
-import com.example.knightWatch.controller.LichessGameController;
-import com.example.knightWatch.model.LichessGame;
-import com.example.knightWatch.repository.LichessGameRepository;
+import com.example.knightWatch.controller.LocalGameController;
+import com.example.knightWatch.model.LocalGame;
+import com.example.knightWatch.repository.LocalGameRepository;
 import com.example.knightWatch.service.LichessService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,16 +27,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("LichessGameController Tests")
-class LichessGameControllerTest {
+class LocalGameControllerTest {
 
     @Mock
-    private LichessGameRepository gameRepo;
+    private LocalGameRepository gameRepo;
 
     @Mock
     private LichessService lichessService;
 
     @InjectMocks
-    private LichessGameController controller;
+    private LocalGameController controller;
 
     private MockMvc mockMvc;
     private ObjectMapper objectMapper;
@@ -52,7 +52,7 @@ class LichessGameControllerTest {
     void getRecentCachedGames_WithValidUsername_ReturnsGames() throws Exception {
 
         String username = "testuser";
-        List<LichessGame> mockGames = createMockGames(username);
+        List<LocalGame> mockGames = createMockGames(username);
         when(lichessService.getRecentGames(username)).thenReturn(mockGames);
 
 
@@ -92,7 +92,7 @@ class LichessGameControllerTest {
     void getCachedGames_WithValidUsername_ReturnsGames() throws Exception {
 
         String username = "testuser";
-        List<LichessGame> mockGames = createMockGames(username);
+        List<LocalGame> mockGames = createMockGames(username);
         when(lichessService.getAllGames(username)).thenReturn(mockGames);
 
 
@@ -121,7 +121,7 @@ class LichessGameControllerTest {
     void getCachedGames_WithSpecialCharactersInUsername_ReturnsGames() throws Exception {
 
         String username = "test_user-123";
-        List<LichessGame> mockGames = createMockGames(username);
+        List<LocalGame> mockGames = createMockGames(username);
         when(lichessService.getAllGames(username)).thenReturn(mockGames);
 
 
@@ -152,8 +152,8 @@ class LichessGameControllerTest {
                 .andExpect(status().isInternalServerError());
     }
 
-    private List<LichessGame> createMockGames(String username) {
-        LichessGame game1 = new LichessGame();
+    private List<LocalGame> createMockGames(String username) {
+        LocalGame game1 = new LocalGame();
         game1.setUsername(username);
         game1.setGameId("game1");
         game1.setOpeningName("Italian Game");
@@ -163,7 +163,7 @@ class LichessGameControllerTest {
         game1.setEco("C50");
         game1.setStatus("mate");
 
-        LichessGame game2 = new LichessGame();
+        LocalGame game2 = new LocalGame();
         game2.setUsername(username);
         game2.setGameId("game2");
         game2.setOpeningName("Sicilian Defense");

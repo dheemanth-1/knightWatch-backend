@@ -5,8 +5,8 @@ import com.example.knightWatch.dto.OpeningInfo;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "lichess_games")
-public class LichessGame {
+@Table(name = "local_games")
+public class LocalGame {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -80,6 +80,14 @@ public class LichessGame {
         this.status = status;
     }
 
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
+    }
+
     private String username;
     private String gameId;
     private String openingName;
@@ -88,10 +96,11 @@ public class LichessGame {
     private String pgn;
     private String eco;
     private String status;
+    private String source;
 
-    public LichessGame() {}
+    public LocalGame() {}
 
-    public LichessGame(chariot.model.Game game, String username) {
+    public LocalGame(chariot.model.Game game, String username) {
         if (username == null || game == null) {
             throw new IllegalArgumentException("Invalid game data");
         }
@@ -105,7 +114,7 @@ public class LichessGame {
     }
 
 
-    public LichessGame(OpeningInfo openingInfo, String username) {
+    public LocalGame(OpeningInfo openingInfo, String username) {
         this.username = username;
         this.gameId = openingInfo.getGameId();
         this.openingName = openingInfo.getBestOpeningName();
@@ -114,6 +123,7 @@ public class LichessGame {
         this.pgn = openingInfo.getPgn();
         this.eco = openingInfo.getEco();
         this.status = openingInfo.getStatus();
+        this.source = openingInfo.getSource();
     }
 
 
@@ -129,6 +139,7 @@ public class LichessGame {
                 ", pgn='" + pgn + '\'' +
                 ", eco='" + eco + '\'' +
                 ", status='" + status + '\'' +
+                ", source='" + source + '\'' +
                 '}';
     }
 }

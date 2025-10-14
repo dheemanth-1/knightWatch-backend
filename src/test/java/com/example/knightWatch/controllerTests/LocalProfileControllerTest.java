@@ -1,10 +1,10 @@
 package com.example.knightWatch.controllerTests;
 
 
-import com.example.knightWatch.controller.LichessProfileController;
-import com.example.knightWatch.model.LichessProfile;
-import com.example.knightWatch.repository.LichessGameRepository;
-import com.example.knightWatch.repository.LichessProfileRepository;
+import com.example.knightWatch.controller.LocalProfileController;
+import com.example.knightWatch.model.LocalProfile;
+import com.example.knightWatch.repository.LocalGameRepository;
+import com.example.knightWatch.repository.LocalProfileRepository;
 import com.example.knightWatch.repository.SyncStatusRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -20,24 +20,23 @@ import org.springframework.http.ResponseEntity;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("LichessProfileController Tests")
-class LichessProfileControllerTest {
+class LocalProfileControllerTest {
 
     @Mock
-    private LichessProfileRepository profileRepo;
+    private LocalProfileRepository profileRepo;
 
     @Mock
-    private LichessGameRepository gameRepo;
+    private LocalGameRepository gameRepo;
 
     @InjectMocks
-    private LichessProfileController controller;
+    private LocalProfileController controller;
 
-    private LichessProfile testProfile1;
-    private LichessProfile testProfile2;
+    private LocalProfile testProfile1;
+    private LocalProfile testProfile2;
 
     @BeforeEach
     void setUp() {
@@ -45,10 +44,10 @@ class LichessProfileControllerTest {
         testProfile2 = createTestProfile("testuser2", 200, 150, 1600, 1500, 1700, 1650, 2100);
     }
 
-    private LichessProfile createTestProfile(String username, int totalGames, int ratedGames,
-                                             int blitzRating, int bulletRating, int rapidRating,
-                                             int classicalRating, int puzzleRating) {
-        LichessProfile profile = new LichessProfile();
+    private LocalProfile createTestProfile(String username, int totalGames, int ratedGames,
+                                           int blitzRating, int bulletRating, int rapidRating,
+                                           int classicalRating, int puzzleRating) {
+        LocalProfile profile = new LocalProfile();
         profile.setUsername(username);
         profile.setTotalGames(totalGames);
         profile.setRatedGames(ratedGames);
@@ -78,7 +77,7 @@ class LichessProfileControllerTest {
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
             assertThat(response.getBody()).isEqualTo(testProfile1);
 
-            LichessProfile returnedProfile = (LichessProfile) response.getBody();
+            LocalProfile returnedProfile = (LocalProfile) response.getBody();
             assertThat(returnedProfile.getUsername()).isEqualTo("testuser1");
             assertThat(returnedProfile.getTotalGames()).isEqualTo(100);
             assertThat(returnedProfile.getRatedGames()).isEqualTo(80);
@@ -110,7 +109,7 @@ class LichessProfileControllerTest {
         void shouldHandleUsernameWithSpecialCharacters() {
 
             String username = "test-user_123";
-            LichessProfile specialProfile = createTestProfile(username, 50, 40, 1300, 1250, 1350, 1300, 1800);
+            LocalProfile specialProfile = createTestProfile(username, 50, 40, 1300, 1250, 1350, 1300, 1800);
             when(profileRepo.findByUsername(username)).thenReturn(Optional.of(specialProfile));
 
             ResponseEntity<?> response = controller.getCachedProfile(username);
@@ -155,16 +154,16 @@ class LichessProfileControllerTest {
         @DisplayName("Should return all profiles when profiles exist")
         void shouldReturnAllProfilesWhenProfilesExist() {
 
-            List<LichessProfile> profiles = Arrays.asList(testProfile1, testProfile2);
+            List<LocalProfile> profiles = Arrays.asList(testProfile1, testProfile2);
             when(profileRepo.findAll()).thenReturn(profiles);
 
-            ResponseEntity<List<LichessProfile>> response = controller.getAllCachedProfiles();
+            ResponseEntity<List<LocalProfile>> response = controller.getAllCachedProfiles();
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
             assertThat(response.getBody()).hasSize(2);
             assertThat(response.getBody()).containsExactlyInAnyOrder(testProfile1, testProfile2);
 
-            List<LichessProfile> returnedProfiles = response.getBody();
+            List<LocalProfile> returnedProfiles = response.getBody();
             assertThat(returnedProfiles.get(0).getUsername()).isIn("testuser1", "testuser2");
             assertThat(returnedProfiles.get(1).getUsername()).isIn("testuser1", "testuser2");
 
@@ -175,10 +174,10 @@ class LichessProfileControllerTest {
         @DisplayName("Should return single profile when only one exists")
         void shouldReturnSingleProfileWhenOnlyOneExists() {
 
-            List<LichessProfile> profiles = Collections.singletonList(testProfile1);
+            List<LocalProfile> profiles = Collections.singletonList(testProfile1);
             when(profileRepo.findAll()).thenReturn(profiles);
 
-            ResponseEntity<List<LichessProfile>> response = controller.getAllCachedProfiles();
+            ResponseEntity<List<LocalProfile>> response = controller.getAllCachedProfiles();
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
             assertThat(response.getBody()).hasSize(1);
@@ -193,7 +192,7 @@ class LichessProfileControllerTest {
 
             when(profileRepo.findAll()).thenReturn(Collections.emptyList());
 
-            ResponseEntity<List<LichessProfile>> response = controller.getAllCachedProfiles();
+            ResponseEntity<List<LocalProfile>> response = controller.getAllCachedProfiles();
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
             assertThat(response.getBody()).isNull();
@@ -204,7 +203,7 @@ class LichessProfileControllerTest {
         @DisplayName("Should handle large number of profiles")
         void shouldHandleLargeNumberOfProfiles() {
 
-            List<LichessProfile> manyProfiles = Arrays.asList(
+            List<LocalProfile> manyProfiles = Arrays.asList(
                     testProfile1,
                     testProfile2,
                     createTestProfile("user3", 300, 250, 1700, 1650, 1750, 1700, 2200),
@@ -213,7 +212,7 @@ class LichessProfileControllerTest {
             );
             when(profileRepo.findAll()).thenReturn(manyProfiles);
 
-            ResponseEntity<List<LichessProfile>> response = controller.getAllCachedProfiles();
+            ResponseEntity<List<LocalProfile>> response = controller.getAllCachedProfiles();
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
             assertThat(response.getBody()).hasSize(5);
@@ -225,16 +224,16 @@ class LichessProfileControllerTest {
         @DisplayName("Should handle profiles with zero ratings")
         void shouldHandleProfilesWithZeroRatings() {
 
-            LichessProfile newProfile = createTestProfile("newuser", 0, 0, 0, 0, 0, 0, 0);
-            List<LichessProfile> profiles = Collections.singletonList(newProfile);
+            LocalProfile newProfile = createTestProfile("newuser", 0, 0, 0, 0, 0, 0, 0);
+            List<LocalProfile> profiles = Collections.singletonList(newProfile);
             when(profileRepo.findAll()).thenReturn(profiles);
 
-            ResponseEntity<List<LichessProfile>> response = controller.getAllCachedProfiles();
+            ResponseEntity<List<LocalProfile>> response = controller.getAllCachedProfiles();
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
             assertThat(response.getBody()).hasSize(1);
 
-            LichessProfile returnedProfile = response.getBody().get(0);
+            LocalProfile returnedProfile = response.getBody().get(0);
             assertThat(returnedProfile.getTotalGames()).isEqualTo(0);
             assertThat(returnedProfile.getRatedGames()).isEqualTo(0);
             assertThat(returnedProfile.getBlitzRating()).isEqualTo(0);
@@ -371,15 +370,15 @@ class LichessProfileControllerTest {
         @DisplayName("Should verify constructor injection")
         void shouldVerifyConstructorInjection() {
 
-            LichessProfileRepository mockProfileRepo = mock(LichessProfileRepository.class);
-            LichessGameRepository mockGameRepo = mock(LichessGameRepository.class);
+            LocalProfileRepository mockProfileRepo = mock(LocalProfileRepository.class);
+            LocalGameRepository mockGameRepo = mock(LocalGameRepository.class);
             SyncStatusRepository mockSyncRepo = mock(SyncStatusRepository.class);
-            LichessProfileController testController = new LichessProfileController(mockProfileRepo, mockGameRepo, mockSyncRepo);
+            LocalProfileController testController = new LocalProfileController(mockProfileRepo, mockGameRepo, mockSyncRepo);
 
             assertThat(testController).isNotNull();
 
             when(mockProfileRepo.findAll()).thenReturn(Collections.emptyList());
-            ResponseEntity<List<LichessProfile>> response = testController.getAllCachedProfiles();
+            ResponseEntity<List<LocalProfile>> response = testController.getAllCachedProfiles();
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
             verify(mockProfileRepo).findAll();
