@@ -71,8 +71,7 @@ public class LocalProfileController {
 
         try {
             boolean userHasData = profileRepo.existsByUsername(username) ||
-                    gameRepo.existsByUsername(username) ||
-                    syncRepo.existsByUsername(username);
+                    gameRepo.existsByUsername(username);
 
             if (!userHasData) {
                 response.put("success", false);

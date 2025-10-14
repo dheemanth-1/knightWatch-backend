@@ -16,6 +16,8 @@ public record ChesscomPlayerDTO(
         Integer bulletRating,
         Integer classicRating,
         Integer puzzleRating,
-        String url
+        String url,
+        Integer followers,
+        Integer puzzleRush
 ) {
 }

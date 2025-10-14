@@ -193,8 +193,7 @@ public class LichessSyncService {
         if(lichessSyncStatus == null) {
             syncStatusDTO = new SyncStatusDTO(null, true, null, 0, username);
         } else {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS");
-            syncStatusDTO = new SyncStatusDTO(LocalDateTime.parse(lichessSyncStatus.getLastSync(), formatter),
+            syncStatusDTO = new SyncStatusDTO(LocalDateTime.parse(lichessSyncStatus.getLastSync()),
                     lichessSyncStatus.isUptoDate(),
                     lichessSyncStatus.getLastLocalGameDate(),
                     lichessSyncStatus.getNumberOfGamesSynced(),

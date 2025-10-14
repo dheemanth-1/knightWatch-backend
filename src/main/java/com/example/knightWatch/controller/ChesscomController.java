@@ -4,7 +4,7 @@ package com.example.knightWatch.controller;
 import com.example.knightWatch.dto.ChesscomPlayerDTO;
 import com.example.knightWatch.model.LocalGame;
 import com.example.knightWatch.service.ChesscomGamesService;
-import com.example.knightWatch.service.ChesscomSyncService;
+
 import io.github.sornerol.chess.pubapi.client.PlayerClient;
 import io.github.sornerol.chess.pubapi.domain.game.ArchiveGameList;
 import io.github.sornerol.chess.pubapi.domain.player.Player;
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
-import java.util.ArrayList;
+
 import java.util.List;
 
 @RestController
@@ -25,13 +25,11 @@ import java.util.List;
 public class ChesscomController {
     private final PlayerClient playerClient;
     private final ChesscomGamesService chesscomGamesService;
-    private final ChesscomSyncService chesscomSyncService;
 
 
-    public ChesscomController(PlayerClient playerClient, ChesscomGamesService chesscomGamesService, ChesscomSyncService chesscomSyncService) {
+    public ChesscomController(PlayerClient playerClient, ChesscomGamesService chesscomGamesService) {
         this.playerClient = playerClient;
         this.chesscomGamesService = chesscomGamesService;
-        this.chesscomSyncService = chesscomSyncService;
     }
 
     @GetMapping("/{username}/profile")
@@ -56,7 +54,9 @@ public class ChesscomController {
                         stats.getChessBullet() != null? stats.getChessBullet().getLast().getRating() : 0,
                         stats.getChessDaily() != null? stats.getChessDaily().getLast().getRating() : 0,
                         stats.getTactics().getHighest().getRating(),
-                        player.getUrl()
+                        player.getUrl(),
+                        player.getFollowers(),
+                        stats.getPuzzleRush().getBest().getScore()
                 );
 
                 return ResponseEntity.ok(chesscomPlayerDTO);

@@ -64,7 +64,9 @@ public class ChesscomSyncService {
                     stats.getChessBullet() != null? stats.getChessBullet().getLast().getRating() : 0,
                     stats.getChessDaily() != null? stats.getChessDaily().getLast().getRating() : 0,
                     stats.getTactics().getHighest().getRating(),
-                    player.getUrl()
+                    player.getUrl(),
+                    player.getFollowers(),
+                    stats.getPuzzleRush().getBest().getScore()
             );
             System.out.println("player dto :" + chesscomPlayerDTO);
             localPlayer = new LocalProfile(chesscomPlayerDTO, "chesscom");
