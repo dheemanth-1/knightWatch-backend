@@ -25,6 +25,10 @@ public class ChesscomSyncStatus {
 
     private Long totalGames;
 
+    @ManyToOne
+    @JoinColumn(name="user_id")
+    private User user;
+
     public ChesscomSyncStatus() {}
 
     public ChesscomSyncStatus(String username, LocalDateTime syncedAt, Integer year, Integer month, Integer gameCountThisMonth, Long totalGames) {
@@ -82,5 +86,13 @@ public class ChesscomSyncStatus {
 
     public void setTotalGames(Long totalGames) {
         this.totalGames = totalGames;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 }

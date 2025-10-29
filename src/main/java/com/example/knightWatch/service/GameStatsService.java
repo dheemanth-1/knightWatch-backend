@@ -19,8 +19,8 @@ public class GameStatsService {
         this.gameRepository = gameRepository;
     }
 
-    public List<GameStatsByOpening> calculateStatsByOpening(String userId) {
-        List<LocalGame> games = gameRepository.findByUsername(userId);
+    public List<GameStatsByOpening> calculateStatsByOpening(String username, String source, long userId) {
+        List<LocalGame> games = gameRepository.findByUsernameAndSourceAndLocalProfile_User_Id(username, source, userId);
 
         // Group by opening name
         Map<String, List<LocalGame>> byOpening = games.stream()
@@ -55,8 +55,8 @@ public class GameStatsService {
         return statsList;
     }
 
-    public OverallStats calculateOverallStats(String userId) {
-        List<LocalGame> games = gameRepository.findByUsername(userId)
+    public OverallStats calculateOverallStats(String username, String source, long userId) {
+        List<LocalGame> games = gameRepository.findByUsernameAndSourceAndLocalProfile_User_Id(username, source, userId)
                 .stream()
                 .filter(g -> g.getResult() != null)
                 .toList();

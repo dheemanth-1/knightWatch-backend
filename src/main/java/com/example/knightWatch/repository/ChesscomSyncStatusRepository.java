@@ -21,4 +21,13 @@ public interface ChesscomSyncStatusRepository extends JpaRepository<ChesscomSync
 
     ChesscomSyncStatus findByUsernameAndYearAndMonth(String username, Integer year, Integer month);
 
+
+    boolean existsByUsernameAndYearAndMonthAndUserId(String username, Integer year, Integer month, long userId);
+    boolean existsByUsernameAndUserId(String username, long userId);
+    void deleteAllByUsernameAndUserId(String username, long userId);
+    List<ChesscomSyncStatus> findAllByUsernameAndUserId(String username, long userId);
+    Long countByUsernameAndUserId(String username, long userId);
+    Optional<ChesscomSyncStatus> findFirstByUsernameAndUserIdOrderBySyncIdDesc(String username, long userId);
+    ChesscomSyncStatus findByUsernameAndYearAndMonthAndUserId(String username, Integer year, Integer month, long userId);
+
 }

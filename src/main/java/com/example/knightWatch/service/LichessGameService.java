@@ -4,27 +4,28 @@ import chariot.Client;
 import chariot.api.GamesApi;
 import com.example.knightWatch.dto.OpeningInfo;
 import com.example.knightWatch.model.LocalGame;
+import com.example.knightWatch.model.LocalProfile;
+import com.example.knightWatch.repository.LocalProfileRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Service
 public class LichessGameService {
 
-    public LichessGameService(Client lichessClient) {
+    public LichessGameService(Client lichessClient, LocalProfileRepository localProfileRepo) {
         this.gamesApi = lichessClient.games();
+        this.localProfileRepo = localProfileRepo;
     }
 
     private final GamesApi gamesApi;
+    private final LocalProfileRepository localProfileRepo;
 
     public List<LocalGame> fetchUserGamesWithOpenings(String username, int maxGames) {
-
+        Optional<LocalProfile> profile = localProfileRepo.findByUsername(username);
         List<String> pgnGames = gamesApi.pgnByUserId(username, params -> {
             params.opening(true);
             params.tags(true);
@@ -48,6 +49,7 @@ public class LichessGameService {
 
             OpeningInfo openingInfo = new OpeningInfo(gameId, eco, opening, pgn, resultNotation, black, white ,timeControl,status, formattedDateTime, "lichess");
             LocalGame localGame = new LocalGame(openingInfo, username);
+            localGame.setLocalProfile(profile.get());
             localGames.add(localGame);
         }
 

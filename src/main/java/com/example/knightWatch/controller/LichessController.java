@@ -20,7 +20,7 @@ public class LichessController {
 
     @GetMapping("/{username}/games")
     public ResponseEntity<List<?>> getRecentGames(@PathVariable String username) {
-        List<?> games = lichessService.getRecentGames(username);
+        List<?> games = lichessService.getRecentGamesFromExternalApi(username);
 
         if (games.isEmpty()) {
             return ResponseEntity.notFound().build();

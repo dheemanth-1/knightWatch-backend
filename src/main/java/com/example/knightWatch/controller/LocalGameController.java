@@ -1,10 +1,12 @@
 package com.example.knightWatch.controller;
 
-import com.example.knightWatch.model.LocalGame;
+import com.example.knightWatch.model.User;
+import com.example.knightWatch.projection.LocalGameProjection;
 import com.example.knightWatch.repository.LocalGameRepository;
-import com.example.knightWatch.service.LichessService;
+import com.example.knightWatch.repository.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -13,17 +15,20 @@ import java.util.List;
 @RequestMapping("/api/db/local/games")
 public class LocalGameController {
 
+    private final LocalGameRepository localGameRepository;
+    private final UserRepository userRepository;
 
-    private final LichessService lichessService;
-
-    public LocalGameController(LichessService lichessService) {
-        this.lichessService = lichessService;
+    public LocalGameController(LocalGameRepository localGameRepository, UserRepository userRepository) {
+        this.localGameRepository = localGameRepository;
+        this.userRepository = userRepository;
 
     }
 
     @GetMapping("/recent/{username}")
-    public ResponseEntity<?> getRecentCachedGames(@PathVariable String username) {
-        List<LocalGame> games = lichessService.getRecentGames(username);
+    public ResponseEntity<?> getRecentCachedGames(@AuthenticationPrincipal org.springframework.security.core.userdetails.User userDetails, @PathVariable String username) {
+        String loggedInUsername = userDetails.getUsername();
+        User loggedInUser = userRepository.findByUsername(loggedInUsername).orElseThrow(() -> new RuntimeException("User not found"));
+        List<LocalGameProjection> games = localGameRepository.findTop10ProjectedByUsernameAndLocalProfile_User_IdOrderByPlayedAtDesc(username, loggedInUser.getId());
         if (games.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
@@ -31,8 +36,10 @@ public class LocalGameController {
     }
 
     @GetMapping("/{username}")
-    public ResponseEntity<?> getCachedGames(@PathVariable String username) {
-        List<LocalGame> games = lichessService.getAllGames(username);
+    public ResponseEntity<?> getCachedGames(@AuthenticationPrincipal org.springframework.security.core.userdetails.User userDetails, @PathVariable String username) {
+        String loggedInUsername = userDetails.getUsername();
+        User loggedInUser = userRepository.findByUsername(loggedInUsername).orElseThrow(() -> new RuntimeException("User not found"));
+        List<LocalGameProjection> games = localGameRepository.findProjectedByUsernameAndLocalProfile_User_Id(username, loggedInUser.getId());
         if (games.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
@@ -41,8 +48,10 @@ public class LocalGameController {
     }
 
     @GetMapping("/{source}/{username}")
-    public ResponseEntity<?> getCachedGamesFromUsernameAndSource(@PathVariable String username, @PathVariable String source) {
-        List<LocalGame> games = lichessService.getAllGamesByUsernameAndSource(username, source);
+    public ResponseEntity<?> getCachedGamesFromUsernameAndSource(@AuthenticationPrincipal org.springframework.security.core.userdetails.User userDetails, @PathVariable String username, @PathVariable String source) {
+        String loggedInUsername = userDetails.getUsername();
+        User loggedInUser = userRepository.findByUsername(loggedInUsername).orElseThrow(() -> new RuntimeException("User not found"));
+        List<LocalGameProjection> games = localGameRepository.findProjectedByUsernameAndSourceAndLocalProfile_User_Id(username, source, loggedInUser.getId());
         if (games.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
