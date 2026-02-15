@@ -88,6 +88,14 @@ public class LocalGame {
         this.source = source;
     }
 
+    public LocalProfile getLocalProfile() {
+        return localProfile;
+    }
+
+    public void setLocalProfile(LocalProfile localProfile) {
+        this.localProfile = localProfile;
+    }
+
     private String username;
     private String gameId;
     private String openingName;
@@ -97,6 +105,10 @@ public class LocalGame {
     private String eco;
     private String status;
     private String source;
+
+    @ManyToOne
+    @JoinColumn(name = "local_profile_id")
+    private LocalProfile localProfile;
 
     public LocalGame() {}
 

@@ -4,6 +4,7 @@ import com.example.knightWatch.dto.ChesscomPlayerDTO;
 import com.example.knightWatch.model.ChesscomSyncStatus;
 import com.example.knightWatch.model.LocalGame;
 import com.example.knightWatch.model.LocalProfile;
+import com.example.knightWatch.model.User;
 import com.example.knightWatch.repository.ChesscomSyncStatusRepository;
 import com.example.knightWatch.repository.LocalGameRepository;
 import com.example.knightWatch.repository.LocalProfileRepository;
@@ -37,7 +38,7 @@ public class ChesscomSyncService {
     private static final Logger log = LoggerFactory.getLogger(ChesscomSyncService.class);
 
     @Transactional
-    public ChesscomSyncStatus syncUser(String username, Integer year, Integer month) throws ChessComPubApiException, IOException {
+    public ChesscomSyncStatus syncUser(String username, Integer year, Integer month, User loggedInUser) throws ChessComPubApiException, IOException {
 
         if(this.chesscomSyncStatusRepo.existsByUsernameAndYearAndMonth(username, year, month)) {
             System.out.println("already synced.");
@@ -70,6 +71,7 @@ public class ChesscomSyncService {
             );
             System.out.println("player dto :" + chesscomPlayerDTO);
             localPlayer = new LocalProfile(chesscomPlayerDTO, "chesscom");
+            localPlayer.setUser(loggedInUser);
             this.profileRepo.save(localPlayer);
         }
 
@@ -77,6 +79,7 @@ public class ChesscomSyncService {
         this.localGameRepo.saveAll(gameList);
 
         var status = new ChesscomSyncStatus(username, LocalDateTime.now(), year, month, gameList.size(), this.localGameRepo.countByUsernameAndSource(username, "chesscom"));
+        status.setUser(loggedInUser);
         this.chesscomSyncStatusRepo.save(status);
         return status;
     }

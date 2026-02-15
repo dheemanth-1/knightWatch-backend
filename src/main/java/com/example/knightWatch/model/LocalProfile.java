@@ -3,10 +3,12 @@ package com.example.knightWatch.model;
 import chariot.model.StatsPerf;
 import chariot.model.StatsPerfType;
 import com.example.knightWatch.dto.ChesscomPlayerDTO;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Map;
 
 @Entity
@@ -94,6 +96,14 @@ public class LocalProfile {
         this.source = source;
     }
 
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
     private String username;
 
     private int totalGames;
@@ -104,6 +114,16 @@ public class LocalProfile {
     private int classicalRating;
     private int puzzleRating;
     private String source;
+
+    @ManyToOne
+    @JoinColumn(name="user_id")
+    private User user;
+
+    @OneToMany(mappedBy = "localProfile", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<LocalGame> games;
+
+
 
     public LocalProfile() {
     }

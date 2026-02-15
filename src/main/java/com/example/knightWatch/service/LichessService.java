@@ -1,6 +1,7 @@
 package com.example.knightWatch.service;
 
 import chariot.Client;
+import chariot.model.Game;
 import chariot.model.User;
 import com.example.knightWatch.model.LocalGame;
 import com.example.knightWatch.repository.LocalGameRepository;
@@ -29,5 +30,9 @@ public class LichessService {
     }
     public Optional<User> getUserProfile(String username) {
         return (Optional<User>) client.users().byId(username).maybe(); // always returns Optional<User> so unchecked cast acceptable for now.
+    }
+
+    public List<Game> getRecentGamesFromExternalApi(String username) {
+        return this.client.games().byUserId(username).stream().limit(10).toList();
     }
 }

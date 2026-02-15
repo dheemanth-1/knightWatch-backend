@@ -2,7 +2,9 @@ package com.example.knightWatch.service;
 
 import com.example.knightWatch.dto.OpeningInfo;
 import com.example.knightWatch.model.LocalGame;
+import com.example.knightWatch.model.LocalProfile;
 import com.example.knightWatch.repository.LocalGameRepository;
+import com.example.knightWatch.repository.LocalProfileRepository;
 import io.github.sornerol.chess.pubapi.client.PlayerClient;
 import io.github.sornerol.chess.pubapi.exception.ChessComPubApiException;
 import org.springframework.stereotype.Service;
@@ -18,13 +20,16 @@ import java.util.regex.Pattern;
 @Service
 public class ChesscomGamesService {
     private final  PlayerClient playerClient;
+    private final LocalProfileRepository localProfileRepository;
     private final LocalGameRepository localGameRepo;
-    public ChesscomGamesService(PlayerClient playerClient, LocalGameRepository localGameRepo) {
+    public ChesscomGamesService(PlayerClient playerClient, LocalProfileRepository localProfileRepository,LocalGameRepository localGameRepo) {
         this.playerClient = playerClient;
+        this.localProfileRepository = localProfileRepository;
         this.localGameRepo = localGameRepo;
     }
 
     public List<LocalGame> fetchUserGamesWithOpenings(String username, Integer year, Integer month) throws ChessComPubApiException, IOException {
+        LocalProfile profile = this.localProfileRepository.findByUsernameAndSource(username, "chesscom").orElseThrow(() -> new RuntimeException("Profile not found"));
         List<LocalGame> list = new ArrayList<>();
         try {
             String pgnGames = playerClient.getMonthlyArchiveForPlayerAsPgn(username, year, month);
@@ -45,7 +50,9 @@ public class ChesscomGamesService {
                         tags.get("UTCDate") + "T" + tags.get("UTCTime"),
                         "chesscom"
                 );
-                list.add(new LocalGame(openingInfo, username));
+                LocalGame localGame = new LocalGame(openingInfo, username);
+                localGame.setLocalProfile(profile);
+                list.add(localGame);
             }
         } catch(Exception e) {
             System.out.println(e.getMessage());

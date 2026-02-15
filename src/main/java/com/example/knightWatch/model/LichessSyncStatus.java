@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 
 
 @Entity
-@Table(name = "sync_status")
+@Table(name = "lichess_sync_status")
 public class LichessSyncStatus {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -14,16 +14,19 @@ public class LichessSyncStatus {
     private String lastSync;
     private String lastLocalGameDate;
     private Integer numberOfGamesSynced;
-    private boolean isUptoDate;
+    private boolean uptoDate;
+    @ManyToOne
+    @JoinColumn(name="user_id")
+    private User user;
 
     private LichessSyncStatus() {}
 
-    public LichessSyncStatus(String lastSync, String username, String lastLocalGameDate, Integer numberOfGamesSynced, boolean isUptoDate) {
+    public LichessSyncStatus(String lastSync, String username, String lastLocalGameDate, Integer numberOfGamesSynced, boolean uptoDate) {
         this.lastSync = lastSync;
         this.username = username;
         this.lastLocalGameDate = lastLocalGameDate;
         this.numberOfGamesSynced = numberOfGamesSynced;
-        this.isUptoDate = isUptoDate;
+        this.uptoDate = uptoDate;
     }
 
     @Override
@@ -34,7 +37,7 @@ public class LichessSyncStatus {
                 ", lastSync='" + lastSync + '\'' +
                 ", lastLocalGameDate='" + lastLocalGameDate + '\'' +
                 ", numberOfGamesSynced=" + numberOfGamesSynced +
-                ", isUptoDate=" + isUptoDate +
+                ", uptoDate=" + uptoDate +
                 '}';
     }
 
@@ -71,10 +74,18 @@ public class LichessSyncStatus {
     }
 
     public boolean isUptoDate() {
-        return isUptoDate;
+        return uptoDate;
     }
 
     public void setUptoDate(boolean uptoDate) {
-        isUptoDate = uptoDate;
+        this.uptoDate = uptoDate;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 }
