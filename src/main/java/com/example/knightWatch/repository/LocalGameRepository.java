@@ -27,64 +27,52 @@ public interface LocalGameRepository extends JpaRepository<LocalGame, Long> {
 
     @Query("""
     SELECT MAX(g.playedAt)
-    FROM LocalGame g
-    WHERE g.username = :username
-      AND g.localProfile.user.id = :userId
+                    FROM LocalGame g
+                    WHERE g.username = :username
+                      AND g.localProfile.user.id = :userId
 """)
     String findLatestGameDateByUsernameAndUserId(@Param("username") String username,
                                                  @Param("userId") long userId);
 
-    @Query(value = "SELECT * FROM local_games WHERE username = :username " +
-            "ORDER BY strftime('%s', " +
-            "  substr(played_at, 1, 4) || '-' || " +     // Year: "2022"
-            "  substr(played_at, 6, 2) || '-' || " +     // Month: "09"
-            "  substr(played_at, 9, 2) || 'T' || " +     // Day: "09"
-            "  substr(played_at, 12, 8)" +               // Time: "14:20:21"
-            ") DESC LIMIT 1",
+    @Query(value = """
+             SELECT * FROM local_games
+             WHERE username = :username
+             ORDER BY played_at DESC
+             LIMIT 1
+             """,
             nativeQuery = true)
     LocalGame findLatestGameByUsername(@Param("username") String username);
 
     @Query(value = """
-    SELECT g.*
-    FROM local_games g
-    JOIN local_profile p ON g.local_profile_id = p.id
-    WHERE g.username = :username
-      AND p.user_id = :userId
-    ORDER BY strftime('%s',
-        substr(g.played_at, 1, 4) || '-' ||
-        substr(g.played_at, 6, 2) || '-' ||
-        substr(g.played_at, 9, 2) || 'T' ||
-        substr(g.played_at, 12, 8)
-    ) DESC
-    LIMIT 1
+            SELECT g.*
+                FROM local_games g
+                JOIN local_profile p ON g.local_profile_id = p.id
+                WHERE g.username = :username
+                  AND p.user_id = :userId
+                ORDER BY g.played_at DESC
+                LIMIT 1
     """, nativeQuery = true)
     LocalGame findLatestGameByUsernameAndUserId(@Param("username") String username,
                                                 @Param("userId") Long userId);
 
 
-    @Query(value = "SELECT * FROM local_games WHERE username = :username " +
-            "ORDER BY strftime('%s', " +
-            "  substr(played_at, 1, 4) || '-' || " +     // Year: "2022"
-            "  substr(played_at, 6, 2) || '-' || " +     // Month: "09"
-            "  substr(played_at, 9, 2) || 'T' || " +     // Day: "09"
-            "  substr(played_at, 12, 8)" +               // Time: "14:20:21"
-            ") ASC LIMIT 1",
+    @Query(value = """
+             SELECT * FROM local_games
+                 WHERE username = :username
+                 ORDER BY played_at ASC
+                 LIMIT 1
+            """,
             nativeQuery = true)
     LocalGame findOldestGameByUsername(@Param("username") String username);
 
     @Query(value = """
-    SELECT g.*
-    FROM local_games g
-    JOIN local_profile p ON g.local_profile_id = p.id
-    WHERE g.username = :username
-      AND p.user_id = :userId
-    ORDER BY strftime('%s',
-        substr(g.played_at, 1, 4) || '-' ||
-        substr(g.played_at, 6, 2) || '-' ||
-        substr(g.played_at, 9, 2) || 'T' ||
-        substr(g.played_at, 12, 8)
-    ) ASC
-    LIMIT 1
+            SELECT g.*
+                FROM local_games g
+                JOIN local_profile p ON g.local_profile_id = p.id
+                WHERE g.username = :username
+                  AND p.user_id = :userId
+                ORDER BY g.played_at ASC
+                LIMIT 1
     """, nativeQuery = true)
     LocalGame findOldestGameByUsernameAndUserId(@Param("username") String username,
                                                 @Param("userId") Long userId);

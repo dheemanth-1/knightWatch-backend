@@ -4,6 +4,9 @@ import chariot.model.Game;
 import com.example.knightWatch.dto.OpeningInfo;
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 @Entity
 @Table(name = "local_games")
 public class LocalGame {
@@ -48,11 +51,11 @@ public class LocalGame {
         this.result = result;
     }
 
-    public String getPlayedAt() {
+    public LocalDateTime getPlayedAt() {
         return playedAt;
     }
 
-    public void setPlayedAt(String playedAt) {
+    public void setPlayedAt(LocalDateTime playedAt) {
         this.playedAt = playedAt;
     }
 
@@ -88,6 +91,14 @@ public class LocalGame {
         this.source = source;
     }
 
+    public String getPlayerColor() {
+        return playerColor;
+    }
+
+    public void setPlayerColor(String playerColor) {
+        this.playerColor = playerColor;
+    }
+
     public LocalProfile getLocalProfile() {
         return localProfile;
     }
@@ -100,11 +111,14 @@ public class LocalGame {
     private String gameId;
     private String openingName;
     private String result;
-    private String playedAt;
+    private LocalDateTime playedAt;
+    @Column(name = "pgn", columnDefinition = "text")
     private String pgn;
     private String eco;
     private String status;
     private String source;
+    @Column(name="player_color")
+    private String playerColor;
 
     @ManyToOne
     @JoinColumn(name = "local_profile_id")
@@ -122,20 +136,21 @@ public class LocalGame {
                 .map(Game.Opening::name)
                 .orElse(null);
         this.status = game.status().name();
-        this.playedAt = game.createdAt().toString(); // ISO date
+        this.playedAt = LocalDateTime.parse(game.createdAt().toString()); // ISO date
     }
 
 
-    public LocalGame(OpeningInfo openingInfo, String username) {
-        this.username = username;
+    public LocalGame(OpeningInfo openingInfo) {
+        this.username = openingInfo.getUsername();
         this.gameId = openingInfo.getGameId();
         this.openingName = openingInfo.getBestOpeningName();
         this.result = openingInfo.getResultFromColor(username);
-        this.playedAt = openingInfo.getPlayedAt();
+        this.playedAt = LocalDateTime.parse(openingInfo.getPlayedAt(), DateTimeFormatter.ofPattern("yyyy.MM.dd'T'HH:mm:ss"));
         this.pgn = openingInfo.getPgn();
         this.eco = openingInfo.getEco();
         this.status = openingInfo.getStatus();
         this.source = openingInfo.getSource();
+        this.playerColor = openingInfo.getPlayerColor();
     }
 
 

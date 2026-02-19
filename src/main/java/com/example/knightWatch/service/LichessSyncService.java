@@ -83,7 +83,7 @@ public class LichessSyncService {
             String lastApiGameId = extractFromPgn(lastPgnGame.getFirst(),"GameId");
             assert date != null;
             String lastDateTimeOfApiGame = date.replace(".", "-") + "T" + time;
-            String lastDateTimeOfDbGame = lastDbGame.getPlayedAt();
+            String lastDateTimeOfDbGame = lastDbGame.getPlayedAt().toString();
 
             System.out.println("API datetime: " + lastDateTimeOfApiGame);
             System.out.println("DB datetime: " + lastDateTimeOfDbGame);
@@ -220,7 +220,7 @@ public class LichessSyncService {
         if(oldestGame == null) {
             return null;
         }
-        LocalDateTime ldt = LocalDateTime.parse(oldestGame.getPlayedAt());
+        LocalDateTime ldt = LocalDateTime.parse(oldestGame.getPlayedAt().toString());
         return ldt.atZone(ZoneId.of("UTC"));
     }
 

@@ -45,10 +45,10 @@ public class LichessGameService {
             String status = tags.get("Termination");
             String date = tags.get("UTCDate");
             String time = tags.get("UTCTime");
-            String formattedDateTime = date.replace(".", "-") + "T" + time;
+            String formattedDateTime = date + "T" + time;
 
-            OpeningInfo openingInfo = new OpeningInfo(gameId, eco, opening, pgn, resultNotation, black, white ,timeControl,status, formattedDateTime, "lichess");
-            LocalGame localGame = new LocalGame(openingInfo, username);
+            OpeningInfo openingInfo = new OpeningInfo(gameId, eco, opening, pgn, resultNotation, black, white ,timeControl,status, formattedDateTime, "lichess", username);
+            LocalGame localGame = new LocalGame(openingInfo);
             localGame.setLocalProfile(profile.get());
             localGames.add(localGame);
         }
@@ -80,8 +80,8 @@ public class LichessGameService {
             String time = tags.get("UTCTime");
             String formattedDateTime = date.replace(".", "-") + "T" + time;
 
-            OpeningInfo openingInfo = new OpeningInfo(gameId, eco, opening, pgn, resultNotation, black, white ,timeControl,status, formattedDateTime, "lichess");
-            LocalGame localGame = new LocalGame(openingInfo, username);
+            OpeningInfo openingInfo = new OpeningInfo(gameId, eco, opening, pgn, resultNotation, black, white ,timeControl,status, formattedDateTime, "lichess", username);
+            LocalGame localGame = new LocalGame(openingInfo);
             localGames.add(localGame);
         }
 

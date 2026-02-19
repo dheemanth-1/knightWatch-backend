@@ -12,9 +12,11 @@ public class OpeningInfo {
     private String status;
     private String playedAt;
     private String source;
+    private String playerColor;
+    private String username;
 
 
-    public OpeningInfo(String gameId, String eco, String openingName, String pgn, String resultNotation, String black, String white, String timeControl, String status, String playedAt, String source) {
+    public OpeningInfo(String gameId, String eco, String openingName, String pgn, String resultNotation, String black, String white, String timeControl, String status, String playedAt, String source, String username) {
         if(source.equals("chesscom")) {
             this.gameId = gameId.substring(gameId.lastIndexOf('/') + 1);
             this.openingName = trimOpeningName(openingName.substring(openingName.lastIndexOf("/") + 1));
@@ -32,6 +34,12 @@ public class OpeningInfo {
         this.timeControl = timeControl;
         this.playedAt = playedAt;
         this.source = source;
+        this.playerColor = extractPlayerColor(username);
+        this.username = username;
+    }
+
+    public String extractPlayerColor(String username) {
+        return this.black.equals(username)? "black" : "white";
     }
 
     public String getResultFromColor(String userId) {
@@ -149,4 +157,14 @@ public class OpeningInfo {
     public void setSource(String source) {
         this.source = source;
     }
+
+    public String getPlayerColor() {return playerColor; }
+
+    public void setPlayerColor(String playerColor) {
+        this.playerColor = playerColor;
+    }
+
+    public String getUsername() {return username;}
+
+    public void setUsername(String username) {this.username = username;}
 }

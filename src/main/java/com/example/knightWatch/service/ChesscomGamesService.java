@@ -48,9 +48,10 @@ public class ChesscomGamesService {
                         tags.get("TimeControl"),
                         tags.get("Termination"),
                         tags.get("UTCDate") + "T" + tags.get("UTCTime"),
-                        "chesscom"
+                        "chesscom",
+                        username
                 );
-                LocalGame localGame = new LocalGame(openingInfo, username);
+                LocalGame localGame = new LocalGame(openingInfo);
                 localGame.setLocalProfile(profile);
                 list.add(localGame);
             }
