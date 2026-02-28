@@ -2,22 +2,37 @@ package com.example.knightWatch.model;
 
 import chariot.model.Game;
 import com.example.knightWatch.dto.OpeningInfo;
+import io.hypersistence.utils.hibernate.type.basic.PostgreSQLLTreeType;
 import jakarta.persistence.*;
+import org.hibernate.annotations.Type;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 @Entity
-@Table(name = "local_games")
+@Table(name = "local_game",
+indexes = {
+@Index(name = "idx_game_user_id", columnList = "user_id"),
+@Index(name = "idx_game_opening_id", columnList = "opening_id"),
+@Index(name = "idx_game_user_id_result", columnList = "user_id, result")
+    }
+)
 public class LocalGame {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
+
     public Long getId() {
         return id;
     }
+
+    public Long getUserId() {return userId;}
+
+    public void setUserId(Long userId) {this.userId = userId;}
 
     public String getUsername() {
         return username;
@@ -107,6 +122,87 @@ public class LocalGame {
         this.localProfile = localProfile;
     }
 
+    public String getPgnPath() {
+        return pgnPath;
+    }
+
+    public void setPgnPath(String pgnPath) {
+        this.pgnPath = pgnPath;
+    }
+
+    public Opening getOpening() {
+        return opening;
+    }
+
+    public void setOpening(Opening opening) {
+        this.opening = opening;
+    }
+
+    public String getEvent() {
+        return event;
+    }
+
+    public void setEvent(String event) {
+        this.event = event;
+    }
+
+    public String getTimeControl() {
+        return timeControl;
+    }
+
+    public void setTimeControl(String timeControl) {
+        this.timeControl = timeControl;
+    }
+
+    public String getVariant() {
+        return variant;
+    }
+
+    public void setVariant(String variant) {
+        this.variant = variant;
+    }
+
+    public String getTermination() {
+        return termination;
+    }
+
+    public void setTermination(String termination) {
+        this.termination = termination;
+    }
+
+    public Integer getPlayerElo() {
+        return playerElo;
+    }
+
+    public void setPlayerElo(Integer playerElo) {
+        this.playerElo = playerElo;
+    }
+
+    public Integer getOpponentElo() {
+        return opponentElo;
+    }
+
+    public void setOpponentElo(Integer opponentElo) {
+        this.opponentElo = opponentElo;
+    }
+
+    public Integer getPlayerRatingDiff() {
+        return playerRatingDiff;
+    }
+
+    public void setPlayerRatingDiff(Integer playerRatingDiff) {
+        this.playerRatingDiff = playerRatingDiff;
+    }
+
+    public Integer getOpponentRatingDiff() {
+        return opponentRatingDiff;
+    }
+
+    public void setOpponentRatingDiff(Integer opponentRatingDiff) {
+        this.opponentRatingDiff = opponentRatingDiff;
+    }
+
+
     private String username;
     private String gameId;
     private String openingName;
@@ -120,9 +216,43 @@ public class LocalGame {
     @Column(name="player_color")
     private String playerColor;
 
+    @Type(PostgreSQLLTreeType.class)
+    @Column(name = "pgn_path", columnDefinition = "ltree")
+    private String pgnPath;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "opening_id", nullable = true)
+    private Opening opening;
+
     @ManyToOne
     @JoinColumn(name = "local_profile_id")
     private LocalProfile localProfile;
+
+    @Column(name = "event")
+    private String event;
+
+    @Column(name = "time_control", length = 50)
+    private String timeControl;  // "180+0", "600+5", "60+1", etc.
+
+    @Column(name = "variant")
+    private String variant;
+
+    @Column(name = "termination")
+    private String termination;
+
+    @Column(name = "player_elo")
+    private Integer playerElo;
+
+    @Column(name = "opponent_elo")
+    private Integer opponentElo;
+
+    @Column(name = "player_rating_diff")
+    private Integer playerRatingDiff;
+
+    @Column(name = "opponent_rating_diff")
+    private Integer opponentRatingDiff;
+
+
 
     public LocalGame() {}
 
@@ -151,6 +281,7 @@ public class LocalGame {
         this.status = openingInfo.getStatus();
         this.source = openingInfo.getSource();
         this.playerColor = openingInfo.getPlayerColor();
+        this.pgnPath = openingInfo.getPgnPath();
     }
 
 

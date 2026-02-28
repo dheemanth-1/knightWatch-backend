@@ -5,8 +5,10 @@ import com.example.knightWatch.model.LocalGame;
 import com.example.knightWatch.model.LocalProfile;
 import com.example.knightWatch.repository.LocalGameRepository;
 import com.example.knightWatch.repository.LocalProfileRepository;
+import com.example.knightWatch.util.PgnToLtreeConverter;
 import io.github.sornerol.chess.pubapi.client.PlayerClient;
 import io.github.sornerol.chess.pubapi.exception.ChessComPubApiException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -19,6 +21,10 @@ import java.util.regex.Pattern;
 
 @Service
 public class ChesscomGamesService {
+    @Autowired
+    private PgnToLtreeConverter pgnConverter;
+    @Autowired
+    private OpeningClassifierService openingClassifierService;
     private final  PlayerClient playerClient;
     private final LocalProfileRepository localProfileRepository;
     private final LocalGameRepository localGameRepo;
@@ -28,7 +34,7 @@ public class ChesscomGamesService {
         this.localGameRepo = localGameRepo;
     }
 
-    public List<LocalGame> fetchUserGamesWithOpenings(String username, Integer year, Integer month) throws ChessComPubApiException, IOException {
+    public List<LocalGame> fetchUserGamesWithOpenings(String username, Integer year, Integer month, com.example.knightWatch.model.User loggedInUser) throws ChessComPubApiException, IOException {
         LocalProfile profile = this.localProfileRepository.findByUsernameAndSource(username, "chesscom").orElseThrow(() -> new RuntimeException("Profile not found"));
         List<LocalGame> list = new ArrayList<>();
         try {
@@ -49,10 +55,13 @@ public class ChesscomGamesService {
                         tags.get("Termination"),
                         tags.get("UTCDate") + "T" + tags.get("UTCTime"),
                         "chesscom",
-                        username
+                        username,
+                        pgnConverter
                 );
                 LocalGame localGame = new LocalGame(openingInfo);
                 localGame.setLocalProfile(profile);
+                localGame.setUserId(loggedInUser.getId());
+                localGame.setOpening(openingClassifierService.classifyGame(localGame.getPgnPath()).orElse(null));
                 list.add(localGame);
             }
         } catch(Exception e) {

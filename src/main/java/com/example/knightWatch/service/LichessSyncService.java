@@ -15,13 +15,11 @@ import com.example.knightWatch.repository.LocalProfileRepository;
 import com.example.knightWatch.repository.SyncStatusRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
 import java.time.*;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -34,7 +32,6 @@ public class LichessSyncService {
     private final LocalProfileRepository profileRepo;
     private final LocalGameRepository gameRepo;
     private final GameStatsService gameStatsService;
-    //private final PlayerProfileRepository playerProfileRepo;
     private final SyncStatusRepository syncStatusRepo;
 
     public LichessSyncService(ClientAuth client,
@@ -42,7 +39,6 @@ public class LichessSyncService {
                               LocalGameRepository gameRepo,
                               LichessGameService lichessGameService,
                               GameStatsService gameStatsService,
-                              //PlayerProfileRepository playerProfileRepo,
                               SyncStatusRepository syncStatusRepo) {
 
         this.userApi = client.users();
@@ -51,7 +47,6 @@ public class LichessSyncService {
         this.gameRepo = gameRepo;
         this.lichessGameService = lichessGameService;
         this.gameStatsService = gameStatsService;
-        //this.playerProfileRepo = playerProfileRepo;
         this.syncStatusRepo = syncStatusRepo;
     }
 
@@ -152,12 +147,12 @@ public class LichessSyncService {
         List<LocalGame> entities;
         if(syncCheck.freshSync()) {
             System.out.println("is this a fresh sync???");
-            entities = lichessGameService.fetchUserGamesWithOpenings(username, numberOfGamesToBeQueried);
+            entities = lichessGameService.fetchUserGamesWithOpenings(username, numberOfGamesToBeQueried, loggedInUser.getId());
         } else {
             System.out.println("not a fresh sync???");
             System.out.println("pending games :" + syncCheck.requestedGamesPending());
             System.out.printf("earliest game date time :" + syncCheck.earliestGameDateTime().toString());
-            entities = lichessGameService.fetchUserGamesWithOpeningsUntilTimeDate(username, syncCheck.requestedGamesPending(), syncCheck.earliestGameDateTime());
+            entities = lichessGameService.fetchUserGamesWithOpeningsUntilTimeDate(username, syncCheck.requestedGamesPending(), syncCheck.earliestGameDateTime(), loggedInUser.getId());
         }
 
         if (entities == null || entities.isEmpty()) {

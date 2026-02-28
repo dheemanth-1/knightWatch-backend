@@ -3,6 +3,8 @@ package com.example.knightWatch.controller;
 
 import com.example.knightWatch.dto.ChesscomPlayerDTO;
 import com.example.knightWatch.model.LocalGame;
+import com.example.knightWatch.model.User;
+import com.example.knightWatch.repository.UserRepository;
 import com.example.knightWatch.service.ChesscomGamesService;
 
 import io.github.sornerol.chess.pubapi.client.PlayerClient;
@@ -11,6 +13,7 @@ import io.github.sornerol.chess.pubapi.domain.player.Player;
 import io.github.sornerol.chess.pubapi.domain.player.stats.PlayerStats;
 import io.github.sornerol.chess.pubapi.exception.ChessComPubApiException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,11 +28,12 @@ import java.util.List;
 public class ChesscomController {
     private final PlayerClient playerClient;
     private final ChesscomGamesService chesscomGamesService;
+    private final UserRepository userRepository;
 
-
-    public ChesscomController(PlayerClient playerClient, ChesscomGamesService chesscomGamesService) {
+    public ChesscomController(PlayerClient playerClient, ChesscomGamesService chesscomGamesService, UserRepository userRepository) {
         this.playerClient = playerClient;
         this.chesscomGamesService = chesscomGamesService;
+        this.userRepository = userRepository;
     }
 
     @GetMapping("/{username}/profile")
@@ -70,10 +74,12 @@ public class ChesscomController {
     }
 
     @GetMapping("/{username}/games/{year}/{month}")
-    public ResponseEntity<?> getGamesByMonth(@PathVariable String username, @PathVariable Integer year, @PathVariable Integer month) {
+    public ResponseEntity<?> getGamesByMonth(@AuthenticationPrincipal org.springframework.security.core.userdetails.User userDetails, @PathVariable String username, @PathVariable Integer year, @PathVariable Integer month) {
         try {
+            String loggedInUsername = userDetails.getUsername();
+            User loggedInUser = userRepository.findByUsername(loggedInUsername).orElseThrow(() -> new RuntimeException("User not found"));
             ArchiveGameList list = playerClient.getMonthlyArchiveForPlayer(username, year, month);
-            List<LocalGame> gameList = this.chesscomGamesService.fetchUserGamesWithOpenings(username, year, month);
+            List<LocalGame> gameList = this.chesscomGamesService.fetchUserGamesWithOpenings(username, year, month, loggedInUser);
 
             if (list != null) {
                 return ResponseEntity.ok(gameList);

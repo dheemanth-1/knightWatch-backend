@@ -6,6 +6,8 @@ import com.example.knightWatch.dto.OpeningInfo;
 import com.example.knightWatch.model.LocalGame;
 import com.example.knightWatch.model.LocalProfile;
 import com.example.knightWatch.repository.LocalProfileRepository;
+import com.example.knightWatch.util.PgnToLtreeConverter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.ZonedDateTime;
@@ -20,12 +22,15 @@ public class LichessGameService {
         this.gamesApi = lichessClient.games();
         this.localProfileRepo = localProfileRepo;
     }
-
+    @Autowired
+    private PgnToLtreeConverter pgnConverter;
+    @Autowired
+    private OpeningClassifierService openingClassifierService;
     private final GamesApi gamesApi;
     private final LocalProfileRepository localProfileRepo;
 
-    public List<LocalGame> fetchUserGamesWithOpenings(String username, int maxGames) {
-        Optional<LocalProfile> profile = localProfileRepo.findByUsername(username);
+    public List<LocalGame> fetchUserGamesWithOpenings(String username, int maxGames, long userId) {
+        Optional<LocalProfile> profile = localProfileRepo.findEntityByUserIdAndUsername(userId, username);
         List<String> pgnGames = gamesApi.pgnByUserId(username, params -> {
             params.opening(true);
             params.tags(true);
@@ -47,16 +52,20 @@ public class LichessGameService {
             String time = tags.get("UTCTime");
             String formattedDateTime = date + "T" + time;
 
-            OpeningInfo openingInfo = new OpeningInfo(gameId, eco, opening, pgn, resultNotation, black, white ,timeControl,status, formattedDateTime, "lichess", username);
+            OpeningInfo openingInfo = new OpeningInfo(gameId, eco, opening, pgn, resultNotation, black, white ,timeControl,status, formattedDateTime, "lichess", username, pgnConverter);
             LocalGame localGame = new LocalGame(openingInfo);
             localGame.setLocalProfile(profile.get());
+            localGame.setOpening(openingClassifierService.classifyGame(localGame.getPgnPath()).orElse(null));
+            localGame.setUserId(userId);
+            localGame.setEvent(tags.get("Event"));
+            localGame.setTimeControl(tags.get("TimeControl"));
             localGames.add(localGame);
         }
 
         return localGames;
     }
 
-    public List<LocalGame> fetchUserGamesWithOpeningsUntilTimeDate(String username, int maxGames, ZonedDateTime earliestDateTime) {
+    public List<LocalGame> fetchUserGamesWithOpeningsUntilTimeDate(String username, int maxGames, ZonedDateTime earliestDateTime, long userId) {
 
         List<String> pgnGames = gamesApi.pgnByUserId(username, params -> {
             params.opening(true);
@@ -78,21 +87,18 @@ public class LichessGameService {
             String status = tags.get("Termination");
             String date = tags.get("UTCDate");
             String time = tags.get("UTCTime");
-            String formattedDateTime = date.replace(".", "-") + "T" + time;
-
-            OpeningInfo openingInfo = new OpeningInfo(gameId, eco, opening, pgn, resultNotation, black, white ,timeControl,status, formattedDateTime, "lichess", username);
+            String formattedDateTime = date + "T" + time;
+            //System.out.println("DEBUG: Formatted datetime string: '" + formattedDateTime + "' length: " + formattedDateTime.length());
+            OpeningInfo openingInfo = new OpeningInfo(gameId, eco, opening, pgn, resultNotation, black, white ,timeControl,status, formattedDateTime, "lichess", username, pgnConverter);
             LocalGame localGame = new LocalGame(openingInfo);
+            localGame.setOpening(openingClassifierService.classifyGame(localGame.getPgnPath()).orElse(null));
+            localGame.setUserId(userId);
+            localGame.setEvent(tags.get("Event"));
+            localGame.setTimeControl(tags.get("TimeControl"));
             localGames.add(localGame);
         }
 
         return localGames;
-    }
-
-    private String extractFromPgn(String pgn, String tagName) {
-        String pattern = "\\[" + tagName + " \"([^\"]+)\"\\]";
-        Pattern regex = Pattern.compile(pattern);
-        Matcher matcher = regex.matcher(pgn);
-        return matcher.find() ? matcher.group(1) : null;
     }
 
     private Map<String, String> parseTags(String pgn) {
@@ -103,4 +109,13 @@ public class LichessGameService {
         }
         return tags;
     }
+
+    private String extractFromPgn(String pgn, String tagName) {
+        String pattern = "\\[" + tagName + " \"([^\"]+)\"\\]";
+        Pattern regex = Pattern.compile(pattern);
+        Matcher matcher = regex.matcher(pgn);
+        return matcher.find() ? matcher.group(1) : null;
+    }
+
+
 }

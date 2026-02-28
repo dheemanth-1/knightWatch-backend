@@ -5,7 +5,11 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.Type;
 
 @Entity
-@Table(name = "opening")
+@Table(name = "opening",
+        indexes = {
+                @Index(name = "idx_opening_pgn_path", columnList = "pgn_path")
+        }
+)
 public class Opening {
 
     @Id

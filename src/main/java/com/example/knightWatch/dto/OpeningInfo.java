@@ -1,6 +1,12 @@
 package com.example.knightWatch.dto;
 
+import com.example.knightWatch.util.PgnToLtreeConverter;
+import org.springframework.beans.factory.annotation.Autowired;
+
 public class OpeningInfo {
+
+
+
     private String gameId;
     private String eco;
     private String openingName;
@@ -14,9 +20,10 @@ public class OpeningInfo {
     private String source;
     private String playerColor;
     private String username;
+    private String pgnPath;
+    private PgnToLtreeConverter pgnConverter;
 
-
-    public OpeningInfo(String gameId, String eco, String openingName, String pgn, String resultNotation, String black, String white, String timeControl, String status, String playedAt, String source, String username) {
+    public OpeningInfo(String gameId, String eco, String openingName, String pgn, String resultNotation, String black, String white, String timeControl, String status, String playedAt, String source, String username, PgnToLtreeConverter pgnConverter) {
         if(source.equals("chesscom")) {
             this.gameId = gameId.substring(gameId.lastIndexOf('/') + 1);
             this.openingName = trimOpeningName(openingName.substring(openingName.lastIndexOf("/") + 1));
@@ -36,6 +43,8 @@ public class OpeningInfo {
         this.source = source;
         this.playerColor = extractPlayerColor(username);
         this.username = username;
+        this.pgnConverter = pgnConverter;
+        this.pgnPath = pgnConverter.convert(extractMovesFromPgn(pgn));
     }
 
     public String extractPlayerColor(String username) {
@@ -167,4 +176,20 @@ public class OpeningInfo {
     public String getUsername() {return username;}
 
     public void setUsername(String username) {this.username = username;}
+
+    public String getPgnPath() {return pgnPath;}
+
+    public void setPgnPath(String pgnPath) {this.pgnPath = pgnPath;}
+
+    public String extractMovesFromPgn(String fullPgn) {
+        if (fullPgn == null || fullPgn.isBlank()) {
+            return null;
+        }
+        String[] parts = fullPgn.split("\\n\\n", 2);
+
+        if (parts.length < 2) {
+            return null;
+        }
+        return parts[1].trim();
+    }
 }

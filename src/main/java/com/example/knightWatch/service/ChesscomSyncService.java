@@ -75,7 +75,7 @@ public class ChesscomSyncService {
             this.profileRepo.save(localPlayer);
         }
 
-        List<LocalGame> gameList = this.chesscomGamesService.fetchUserGamesWithOpenings(username, year, month);
+        List<LocalGame> gameList = this.chesscomGamesService.fetchUserGamesWithOpenings(username, year, month, loggedInUser);
         this.localGameRepo.saveAll(gameList);
 
         var status = new ChesscomSyncStatus(username, LocalDateTime.now(), year, month, gameList.size(), this.localGameRepo.countByUsernameAndSource(username, "chesscom"));
