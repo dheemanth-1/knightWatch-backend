@@ -69,7 +69,6 @@ public class ChesscomSyncService {
                     player.getFollowers(),
                     stats.getPuzzleRush().getBest().getScore()
             );
-            System.out.println("player dto :" + chesscomPlayerDTO);
             localPlayer = new LocalProfile(chesscomPlayerDTO, "chesscom");
             localPlayer.setUser(loggedInUser);
             this.profileRepo.save(localPlayer);

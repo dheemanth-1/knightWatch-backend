@@ -40,25 +40,10 @@ public class LichessGameService {
         List<LocalGame> localGames = new ArrayList<>();
         for (String pgn : pgnGames) {
             Map<String, String> tags = parseTags(pgn);
-            String gameId = tags.get("GameId");
-            String eco = tags.get("ECO");
-            String opening = tags.get("Opening");
-            String resultNotation = tags.get("Result");
-            String black = tags.get("Black");
-            String white = tags.get("White");
-            String timeControl = tags.get("TimeControl");
-            String status = tags.get("Termination");
-            String date = tags.get("UTCDate");
-            String time = tags.get("UTCTime");
-            String formattedDateTime = date + "T" + time;
-
-            OpeningInfo openingInfo = new OpeningInfo(gameId, eco, opening, pgn, resultNotation, black, white ,timeControl,status, formattedDateTime, "lichess", username, pgnConverter);
+            OpeningInfo openingInfo = OpeningInfo.Builder.fromPgnTags(tags, username, "lichess", pgn,pgnConverter, userId);
             LocalGame localGame = new LocalGame(openingInfo);
             localGame.setLocalProfile(profile.get());
             localGame.setOpening(openingClassifierService.classifyGame(localGame.getPgnPath()).orElse(null));
-            localGame.setUserId(userId);
-            localGame.setEvent(tags.get("Event"));
-            localGame.setTimeControl(tags.get("TimeControl"));
             localGames.add(localGame);
         }
 
@@ -66,7 +51,7 @@ public class LichessGameService {
     }
 
     public List<LocalGame> fetchUserGamesWithOpeningsUntilTimeDate(String username, int maxGames, ZonedDateTime earliestDateTime, long userId) {
-
+        Optional<LocalProfile> profile = localProfileRepo.findEntityByUserIdAndUsername(userId, username);
         List<String> pgnGames = gamesApi.pgnByUserId(username, params -> {
             params.opening(true);
             params.tags(true);
@@ -77,24 +62,10 @@ public class LichessGameService {
         List<LocalGame> localGames = new ArrayList<>();
         for (String pgn : pgnGames) {
             Map<String, String> tags = parseTags(pgn);
-            String gameId = tags.get("GameId");
-            String eco = tags.get("ECO");
-            String opening = tags.get("Opening");
-            String resultNotation = tags.get("Result");
-            String black = tags.get("Black");
-            String white = tags.get("White");
-            String timeControl = tags.get("TimeControl");
-            String status = tags.get("Termination");
-            String date = tags.get("UTCDate");
-            String time = tags.get("UTCTime");
-            String formattedDateTime = date + "T" + time;
-            //System.out.println("DEBUG: Formatted datetime string: '" + formattedDateTime + "' length: " + formattedDateTime.length());
-            OpeningInfo openingInfo = new OpeningInfo(gameId, eco, opening, pgn, resultNotation, black, white ,timeControl,status, formattedDateTime, "lichess", username, pgnConverter);
+            OpeningInfo openingInfo = OpeningInfo.Builder.fromPgnTags(tags, username, "lichess", pgn,pgnConverter, userId);
             LocalGame localGame = new LocalGame(openingInfo);
+            localGame.setLocalProfile(profile.get());
             localGame.setOpening(openingClassifierService.classifyGame(localGame.getPgnPath()).orElse(null));
-            localGame.setUserId(userId);
-            localGame.setEvent(tags.get("Event"));
-            localGame.setTimeControl(tags.get("TimeControl"));
             localGames.add(localGame);
         }
 

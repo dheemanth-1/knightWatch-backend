@@ -87,15 +87,49 @@ public interface LocalGameRepository extends JpaRepository<LocalGame, Long> {
     long countByUsernameAndSourceAndLocalProfile_User_Id(String username, String source, long userId);
 
     @Query(value = """
-        SELECT DISTINCT o.opening_id, o.name, o.eco, o.pgn_path::text, 
-               nlevel(o.pgn_path) as depth,
-               COUNT(g.id) as game_count
-        FROM opening o
-        JOIN local_game g ON g.opening_id = o.opening_id
-        WHERE g.user_id = :userId
-          AND g.local_profile_id = :localProfileId
-        GROUP BY o.opening_id, o.name, o.eco, o.pgn_path
-        ORDER BY nlevel(o.pgn_path) ASC, game_count DESC
+            WITH user_games AS (
+                    SELECT DISTINCT g.pgn_path
+                    FROM local_game g
+                    WHERE g.user_id = :userId
+                      AND g.local_profile_id = :localProfileId
+                ),
+                root_openings AS (
+                    SELECT DISTINCT o.opening_id, o.name, o.eco, o.pgn_path
+                    FROM opening o
+                    WHERE EXISTS (
+                        -- This opening has games that are descendants
+                        SELECT 1
+                        FROM user_games ug
+                        WHERE ug.pgn_path <@ o.pgn_path
+                    )
+                    AND NOT EXISTS (
+                        -- No parent opening exists that also has descendant games
+                        SELECT 1
+                        FROM opening o_parent
+                        WHERE o.pgn_path <@ o_parent.pgn_path  -- o is descendant of o_parent
+                          AND o.pgn_path != o_parent.pgn_path  -- not the same
+                          AND nlevel(o_parent.pgn_path) < nlevel(o.pgn_path)  -- o_parent is shallower
+                          AND EXISTS (
+                              -- o_parent also has descendant games
+                              SELECT 1
+                              FROM user_games ug2
+                              WHERE ug2.pgn_path <@ o_parent.pgn_path
+                          )
+                    )
+                )
+                SELECT\s
+                    ro.opening_id,
+                    ro.name,
+                    ro.eco,
+                    ro.pgn_path::text,
+                    nlevel(ro.pgn_path) as depth,
+                    COUNT(g.id) as game_count
+                FROM root_openings ro
+                JOIN local_game g ON g.pgn_path <@ ro.pgn_path
+                WHERE g.user_id = :userId
+                  AND g.local_profile_id = :localProfileId
+                GROUP BY ro.opening_id, ro.name, ro.eco, ro.pgn_path
+                ORDER BY nlevel(ro.pgn_path) ASC, game_count DESC
     """, nativeQuery = true)
     List<Object[]> findRootOpeningsByUserAndProfile(@Param("userId") Long userId,
                                                     @Param("localProfileId") Long localProfileId);

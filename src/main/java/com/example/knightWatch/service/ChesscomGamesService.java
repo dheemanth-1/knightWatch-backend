@@ -42,22 +42,8 @@ public class ChesscomGamesService {
             List<String> pgnList = splitPgns(pgnGames);
             for(String pgn : pgnList) {
                 Map<String, String> tags = parseTags(pgn);
+                OpeningInfo openingInfo = OpeningInfo.Builder.fromPgnTags(tags, username, "chesscom", pgn, pgnConverter, loggedInUser.getId());
 
-                OpeningInfo openingInfo = new OpeningInfo(
-                        tags.get("Link"),
-                        tags.get("ECO"),
-                        tags.get("ECOUrl"),
-                        pgn,
-                        tags.get("Result"),
-                        tags.get("Black"),
-                        tags.get("White"),
-                        tags.get("TimeControl"),
-                        tags.get("Termination"),
-                        tags.get("UTCDate") + "T" + tags.get("UTCTime"),
-                        "chesscom",
-                        username,
-                        pgnConverter
-                );
                 LocalGame localGame = new LocalGame(openingInfo);
                 localGame.setLocalProfile(profile);
                 localGame.setUserId(loggedInUser.getId());

@@ -26,6 +26,113 @@ public class LocalGame {
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
+    private String username;
+    private String gameId;
+    private String openingName;
+    private String result;
+    private LocalDateTime playedAt;
+    @Column(name = "pgn", columnDefinition = "text")
+    private String pgn;
+    private String eco;
+    private String status;
+    private String source;
+    @Column(name="player_color")
+    private String playerColor;
+
+    @Type(PostgreSQLLTreeType.class)
+    @Column(name = "pgn_path", columnDefinition = "ltree")
+    private String pgnPath;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "opening_id", nullable = true)
+    private Opening opening;
+
+    @ManyToOne
+    @JoinColumn(name = "local_profile_id")
+    private LocalProfile localProfile;
+
+    @Column(name = "event")
+    private String event;
+
+    @Column(name = "time_control", length = 50)
+    private String timeControl;  // "180+0", "600+5", "60+1", etc.
+
+    @Column(name = "variant")
+    private String variant;
+
+    @Column(name = "termination")
+    private String termination;
+
+    @Column(name = "player_elo")
+    private Integer playerElo;
+
+    @Column(name = "opponent_elo")
+    private Integer opponentElo;
+
+    @Column(name = "player_rating_diff")
+    private Integer playerRatingDiff;
+
+    @Column(name = "opponent_rating_diff")
+    private Integer opponentRatingDiff;
+
+
+
+    public LocalGame() {}
+
+    public LocalGame(chariot.model.Game game, String username) {
+        if (username == null || game == null) {
+            throw new IllegalArgumentException("Invalid game data");
+        }
+        this.username = username;
+        this.gameId = game.id();
+        this.openingName = game.opening()
+                .map(Game.Opening::name)
+                .orElse(null);
+        this.status = game.status().name();
+        this.playedAt = LocalDateTime.parse(game.createdAt().toString()); // ISO date
+    }
+
+
+    public LocalGame(OpeningInfo openingInfo) {
+        this.userId = openingInfo.getUserId();
+        this.username = openingInfo.getUsername();
+        this.gameId = openingInfo.getGameId();
+        this.openingName = openingInfo.getOpeningName();
+        this.result = openingInfo.getResultFromColor(this.username);
+        this.playedAt = LocalDateTime.parse(openingInfo.getPlayedAt(), DateTimeFormatter.ofPattern("yyyy.MM.dd'T'HH:mm:ss"));
+        this.pgn = openingInfo.getPgn();
+        this.eco = openingInfo.getEco();
+        this.status = openingInfo.getStatus();
+        this.source = openingInfo.getSource();
+        this.playerColor = openingInfo.getPlayerColor();
+        this.pgnPath = openingInfo.getPgnPath();
+        this.event = openingInfo.getEvent();
+        this.timeControl = openingInfo.getTimeControl();
+        this.variant = openingInfo.getVariant();
+        this.termination = openingInfo.getTermination();
+        this.playerElo = openingInfo.getPlayerElo();
+        this.opponentElo = openingInfo.getOpponentElo();
+        this.playerRatingDiff = openingInfo.getPlayerRatingDiff();
+        this.opponentRatingDiff = openingInfo.getOpponentRatingDiff();
+    }
+
+
+    @Override
+    public String toString() {
+        return "LichessGame{" +
+                "id=" + id +
+                ", username='" + username + '\'' +
+                ", gameId='" + gameId + '\'' +
+                ", openingName='" + openingName + '\'' +
+                ", result='" + result + '\'' +
+                ", playedAt='" + playedAt + '\'' +
+                ", pgn='" + pgn + '\'' +
+                ", eco='" + eco + '\'' +
+                ", status='" + status + '\'' +
+                ", source='" + source + '\'' +
+                '}';
+    }
+
     public Long getId() {
         return id;
     }
@@ -200,104 +307,5 @@ public class LocalGame {
 
     public void setOpponentRatingDiff(Integer opponentRatingDiff) {
         this.opponentRatingDiff = opponentRatingDiff;
-    }
-
-
-    private String username;
-    private String gameId;
-    private String openingName;
-    private String result;
-    private LocalDateTime playedAt;
-    @Column(name = "pgn", columnDefinition = "text")
-    private String pgn;
-    private String eco;
-    private String status;
-    private String source;
-    @Column(name="player_color")
-    private String playerColor;
-
-    @Type(PostgreSQLLTreeType.class)
-    @Column(name = "pgn_path", columnDefinition = "ltree")
-    private String pgnPath;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "opening_id", nullable = true)
-    private Opening opening;
-
-    @ManyToOne
-    @JoinColumn(name = "local_profile_id")
-    private LocalProfile localProfile;
-
-    @Column(name = "event")
-    private String event;
-
-    @Column(name = "time_control", length = 50)
-    private String timeControl;  // "180+0", "600+5", "60+1", etc.
-
-    @Column(name = "variant")
-    private String variant;
-
-    @Column(name = "termination")
-    private String termination;
-
-    @Column(name = "player_elo")
-    private Integer playerElo;
-
-    @Column(name = "opponent_elo")
-    private Integer opponentElo;
-
-    @Column(name = "player_rating_diff")
-    private Integer playerRatingDiff;
-
-    @Column(name = "opponent_rating_diff")
-    private Integer opponentRatingDiff;
-
-
-
-    public LocalGame() {}
-
-    public LocalGame(chariot.model.Game game, String username) {
-        if (username == null || game == null) {
-            throw new IllegalArgumentException("Invalid game data");
-        }
-        this.username = username;
-        this.gameId = game.id();
-        this.openingName = game.opening()
-                .map(Game.Opening::name)
-                .orElse(null);
-        this.status = game.status().name();
-        this.playedAt = LocalDateTime.parse(game.createdAt().toString()); // ISO date
-    }
-
-
-    public LocalGame(OpeningInfo openingInfo) {
-        this.username = openingInfo.getUsername();
-        this.gameId = openingInfo.getGameId();
-        this.openingName = openingInfo.getBestOpeningName();
-        this.result = openingInfo.getResultFromColor(username);
-        this.playedAt = LocalDateTime.parse(openingInfo.getPlayedAt(), DateTimeFormatter.ofPattern("yyyy.MM.dd'T'HH:mm:ss"));
-        this.pgn = openingInfo.getPgn();
-        this.eco = openingInfo.getEco();
-        this.status = openingInfo.getStatus();
-        this.source = openingInfo.getSource();
-        this.playerColor = openingInfo.getPlayerColor();
-        this.pgnPath = openingInfo.getPgnPath();
-    }
-
-
-    @Override
-    public String toString() {
-        return "LichessGame{" +
-                "id=" + id +
-                ", username='" + username + '\'' +
-                ", gameId='" + gameId + '\'' +
-                ", openingName='" + openingName + '\'' +
-                ", result='" + result + '\'' +
-                ", playedAt='" + playedAt + '\'' +
-                ", pgn='" + pgn + '\'' +
-                ", eco='" + eco + '\'' +
-                ", status='" + status + '\'' +
-                ", source='" + source + '\'' +
-                '}';
     }
 }

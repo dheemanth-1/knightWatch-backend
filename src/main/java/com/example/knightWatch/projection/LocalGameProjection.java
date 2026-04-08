@@ -14,4 +14,9 @@ public interface LocalGameProjection {
     String getStatus();
     String getSource();
     String getPlayerColor();
+    String getPgnPath();
+    String getEvent();
+    Integer getTimeControl();
+    Integer getPlayerElo();
+    Integer getOpponentElo();
 }
