@@ -5,6 +5,8 @@ import chariot.api.GamesApi;
 import chariot.model.Many;
 import chariot.model.Pgn;
 import com.example.knightWatch.model.LocalGame;
+import com.example.knightWatch.model.LocalProfile;
+import com.example.knightWatch.repository.LocalProfileRepository;
 import com.example.knightWatch.service.LichessGameService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,19 +27,22 @@ public class LocalGameServiceTests {
     private Client clientMock;
     private LichessGameService service;
     private GamesApi gamesApiMock;
+    private LocalProfileRepository localProfileRepoMock;
 
     @BeforeEach
     void setup() {
         gamesApiMock = mock(GamesApi.class);
         clientMock = mock(Client.class);
+        localProfileRepoMock = mock(LocalProfileRepository.class);
         when(clientMock.games()).thenReturn(gamesApiMock);
-        service = new LichessGameService(clientMock);
+        service = new LichessGameService(clientMock, localProfileRepoMock);
     }
 
     @Test
     void fetchUserGamesWithOpenings_returnsExpectedLichessGames() {
         String username = "testuser";
         int maxGames = 2;
+        long userId = 1;
         String pgn1 = "[GameId \"id1\"]\n" +
                 "[ECO \"B20\"]\n[Opening \"Sicilian Defense\"]\n[Result \"1-0\"]\n[White \"testuser\"]\n[Black \"Beta\"]\n\n1. e4 c5 1-0";
         String pgn2 = "[GameId \"id2\"]\n" +
@@ -52,7 +57,7 @@ public class LocalGameServiceTests {
 
         when(gamesApiMock.pgnByUserId(anyString(), any())).thenReturn(Many.entries(pgnObjects.stream()));
 
-        List<LocalGame> games = service.fetchUserGamesWithOpenings(username, maxGames);
+        List<LocalGame> games = service.fetchUserGamesWithOpenings(username, maxGames, userId);
 
 
         Assertions.assertEquals(2, games.size());

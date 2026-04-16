@@ -69,13 +69,12 @@ public class ChesscomSyncService {
                     player.getFollowers(),
                     stats.getPuzzleRush().getBest().getScore()
             );
-            System.out.println("player dto :" + chesscomPlayerDTO);
             localPlayer = new LocalProfile(chesscomPlayerDTO, "chesscom");
             localPlayer.setUser(loggedInUser);
             this.profileRepo.save(localPlayer);
         }
 
-        List<LocalGame> gameList = this.chesscomGamesService.fetchUserGamesWithOpenings(username, year, month);
+        List<LocalGame> gameList = this.chesscomGamesService.fetchUserGamesWithOpenings(username, year, month, loggedInUser);
         this.localGameRepo.saveAll(gameList);
 
         var status = new ChesscomSyncStatus(username, LocalDateTime.now(), year, month, gameList.size(), this.localGameRepo.countByUsernameAndSource(username, "chesscom"));
