@@ -249,7 +249,7 @@ public interface LocalGameRepository extends JpaRepository<LocalGame, Long> {
     FROM local_game g
     JOIN local_profile lp ON g.local_profile_id = lp.id
     WHERE lp.user_id = :userId
-      AND g.opening_id = :openingId
+            AND g.pgn_path <@ (SELECT pgn_path FROM opening WHERE opening_id = :openingId)
       AND lp.id = :localProfileId
     """, nativeQuery = true)
     List<Object[]> getOpeningStatsWithColor(@Param("userId") Long userId,
@@ -258,12 +258,12 @@ public interface LocalGameRepository extends JpaRepository<LocalGame, Long> {
 
 
     @Query(value = """
-            SELECT g.id, g.game_id, g.username, g.result, g.played_at, g.source, g.player_color
-                FROM local_game g
-                WHERE g.user_id = :userId
-                  AND g.opening_id = :openingId
-                  AND g.local_profile_id = :localProfileId
-                ORDER BY g.played_at DESC
+            SELECT g.id, g.game_id, g.username, g.result, g.played_at, g.source, g.player_color, g.pgn
+                            FROM local_game g
+                            WHERE g.user_id = :userId
+                              AND g.local_profile_id = :localProfileId
+                              AND g.pgn_path <@ (SELECT pgn_path FROM opening WHERE opening_id = :openingId)
+                            ORDER BY g.played_at DESC
     """, nativeQuery = true)
     List<Object[]> findGamesByOpening(@Param("userId") Long userId,
                                       @Param("openingId") Long openingId, @Param("localProfileId") Long localProfileId);

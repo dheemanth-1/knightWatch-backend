@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 public class GameSummaryDTO {
     private Long gameId;
     private String gameIdExternal;
+    private String pgn;
     private String player;
     private String result;
     private LocalDateTime playedAt;
@@ -14,9 +15,10 @@ public class GameSummaryDTO {
     public GameSummaryDTO() {
     }
 
-    public GameSummaryDTO(Long gameId, String gameIdExternal, String player, String result, LocalDateTime playedAt, String source) {
+    public GameSummaryDTO(Long gameId, String gameIdExternal, String pgn, String player, String result, LocalDateTime playedAt, String source) {
         this.gameId = gameId;
         this.gameIdExternal = gameIdExternal;
+        this.pgn = pgn;
         this.player = player;
         this.result = result;
         this.playedAt = playedAt;
@@ -33,6 +35,14 @@ public class GameSummaryDTO {
 
     public String getGameIdExternal() {
         return gameIdExternal;
+    }
+
+    public String getPgn() {
+        return pgn;
+    }
+
+    public void setPgn(String pgn) {
+        this.pgn = pgn;
     }
 
     public void setGameIdExternal(String gameIdExternal) {

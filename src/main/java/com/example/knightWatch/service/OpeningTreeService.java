@@ -36,7 +36,6 @@ public class OpeningTreeService {
     public List<OpeningNodeDTO> getChildOpenings(Long userId, Long openingId, Long localProfileId) {
         Opening opening = openingRepository.findById(openingId)
                 .orElseThrow(() -> new RuntimeException("Opening not found"));
-        System.out.println(opening.getPgnPath());
         List<Object[]> results = gameRepository.findChildOpenings(userId, opening.getPgnPath(), localProfileId);
         return results.stream()
                 .map(this::mapToOpeningNode)
@@ -75,7 +74,7 @@ public class OpeningTreeService {
         */
         List<Object[]> statsResults = gameRepository.getOpeningStatsWithColor(userId, openingId, localProfileId);
         if (!statsResults.isEmpty()) {
-            node.setStats(mapToStatsWithColor(statsResults.get(0)));
+            node.setStats(mapToStatsWithColor(statsResults.getFirst()));
         }
 
         /*
@@ -186,7 +185,7 @@ public class OpeningTreeService {
         dto.setResult((String) row[3]);
         dto.setPlayedAt(((java.sql.Timestamp) row[4]).toLocalDateTime());
         dto.setSource((String) row[5]);
-
+        dto.setPgn((String) row[7]);
         return dto;
     }
 
